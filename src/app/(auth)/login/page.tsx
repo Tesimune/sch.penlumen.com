@@ -177,7 +177,7 @@ export default function LoginPage() {
                       role === 'admin' ? 'underline' : ''
                     }`}
                   >
-                    Admin
+                    Default
                   </a>
                   <span className='text-muted-foreground'>•</span>
                   <a
