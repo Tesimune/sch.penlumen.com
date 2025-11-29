@@ -2,12 +2,13 @@
 
 import { toast } from 'sonner';
 import { useUser } from '@/hooks/user';
-import { Download } from 'lucide-react';
+import { Download, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import UserCreate from '@/components/user-create';
 import UsersIndex from '@/components/users-table';
 import IsLoading from '@/components/is-loading';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 interface User {
   uuid: string;
@@ -67,25 +68,16 @@ export default function StaffPage() {
           </div>
         </div>
         <div className='flex items-center gap-2'>
-          <Button variant='outline' size='sm'>
-            <Download className='mr-2 h-4 w-4' />
-            Export
-          </Button>
-          <UserCreate
-            role='parent'
-            fetchData={fetchData}
-            setIsLoading={setIsLoading}
-          />
+          <Link href='/staff/parents/create'>
+            <Button size='sm'>
+              <Plus className='mr-1 h-4 w-4' /> Create Parent
+            </Button>
+          </Link>
         </div>
       </div>
 
       <div>
-        <UsersIndex
-          role='parent'
-          fetchData={fetchData}
-          setIsLoading={setIsLoading}
-          users={parents}
-        />
+        <UsersIndex role='parent' users={parents} fetchData={fetchData} />
       </div>
     </div>
   );

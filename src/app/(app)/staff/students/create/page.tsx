@@ -1,10 +1,10 @@
+import StudentCreate from '@/components/student-create';
 import React from 'react';
-import StudentUpdate from '@/components/student-update';
 
 export default function page() {
   return (
     <div>
-      <StudentUpdate />
+      <StudentCreate />
     </div>
   );
 }

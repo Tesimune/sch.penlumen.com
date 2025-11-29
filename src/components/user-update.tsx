@@ -1,15 +1,12 @@
 'use client';
+
 import { toast } from 'sonner';
 import { useUser } from '@/hooks/user';
 import React, { useEffect, useState } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { useParams, useRouter } from 'next/navigation';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -17,31 +14,36 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import IsLoading from './is-loading';
 
-export default function UserUpdate({
-  role,
-  editUUID,
-  formData,
-  setFormData,
-  fetchData,
-  setIsLoading,
-  isAddDialogOpen,
-  setIsAddDialogOpen,
-}: {
+type UserData = {
+  name: string;
+  email: string;
+  password: string;
+  contact?: string;
+  alt_contact?: string;
+  position?: string;
+  address?: string;
   role: string;
-  editUUID: string | null;
-  formData: any;
-  fetchData: () => void;
-  setFormData: (data: any) => void;
-  setIsLoading: (loading: boolean) => void;
-  isAddDialogOpen: boolean;
-  setIsAddDialogOpen: (open: boolean) => void;
-}) {
-  const { update } = useUser();
+};
+
+export default function UserUpdatePage({ role }: { role: string }) {
+  const { show, update } = useUser();
+  const { uuid } = useParams() as { uuid: string };
+  const router = useRouter();
+
+  const [isLoading, setIsLoading] = useState(true);
   const [positions, setPositions] = useState<string[]>([]);
+  const [formData, setFormData] = useState<UserData>({
+    name: '',
+    email: '',
+    password: '',
+    contact: '',
+    alt_contact: '',
+    position: '',
+    address: '',
+    role,
+  });
 
   useEffect(() => {
     if (role === 'staff') {
@@ -53,151 +55,154 @@ export default function UserUpdate({
     }
   }, [role]);
 
+  const fetchUser = async () => {
+    const response = await show(uuid);
+    if (response.success && response.data) {
+      const user = response.data.user;
+      setFormData({
+        name: user.name,
+        email: user.email,
+        password: '',
+        contact: user.contact || '',
+        alt_contact: user.alt_contact || '',
+        position: user.position || '',
+        address: user.address || '',
+        role: user.role,
+      });
+    }
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    fetchUser();
+  }, []);
+
   const saveUser = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+
     try {
-      const response = await update(editUUID, formData);
+      const response = await update(uuid, formData);
+      console.log(response);
       if (response.success) {
-        setFormData({
-          name: '',
-          email: '',
-          password: '',
-          contact: '',
-          alt_contact: '',
-          position: '',
-          address: '',
-          role,
-        });
-        fetchData();
-        setIsAddDialogOpen(false);
+        toast.success('User updated successfully');
+        router.push(`/staffs/${role}s`);
       } else {
-        toast.error(response.message || 'Something went wrong');
+        toast.error(response.message || 'Unable to update user');
       }
     } catch (error: any) {
       toast.error(error.message || 'Something went wrong');
     } finally {
-      fetchData();
+      setIsLoading(false);
     }
   };
 
+  if (isLoading) {
+    return <IsLoading />;
+  }
+
   return (
-    <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-      <DialogContent className='max-w-md max-h-[95vh] overflow-y-auto scroll-hidden'>
-        <DialogHeader>
-          <DialogTitle>
-            Update {role.charAt(0).toUpperCase() + role.slice(1)}
-          </DialogTitle>
-          <DialogDescription>Update {role} account</DialogDescription>
-        </DialogHeader>
-        <form onSubmit={saveUser} className='space-y-4 py-4'>
-          <div className='space-y-2'>
-            <Label htmlFor='name'>Full Name</Label>
+    <div className='max-w-2xl mx-auto p-6'>
+      <div className='mb-6'>
+        <h1 className='text-xl font-semibold'>
+          Update {role.charAt(0).toUpperCase() + role.slice(1)}
+        </h1>
+        <p className='text-muted-foreground'>Modify the user details below</p>
+      </div>
+
+      <form onSubmit={saveUser} className='space-y-5'>
+        <div>
+          <Label>Full Name</Label>
+          <Input
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          />
+        </div>
+
+        <div>
+          <Label>Email</Label>
+          <Input
+            type='email'
+            value={formData.email}
+            onChange={(e) =>
+              setFormData({ ...formData, email: e.target.value })
+            }
+          />
+        </div>
+
+        <div>
+          <Label>Password (leave empty to keep current)</Label>
+          <Input
+            type='password'
+            value={formData.password}
+            onChange={(e) =>
+              setFormData({ ...formData, password: e.target.value })
+            }
+          />
+        </div>
+
+        <div className='grid grid-cols-2 gap-4'>
+          <div>
+            <Label>Contact</Label>
             <Input
-              id='name'
-              placeholder='e.g., John Doe'
-              value={formData.name}
+              value={formData.contact || ''}
               onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
+                setFormData({ ...formData, contact: e.target.value })
               }
             />
           </div>
-          <div className='space-y-2'>
-            <Label htmlFor='email'>Email</Label>
+
+          <div>
+            <Label>Alt Contact</Label>
             <Input
-              id='email'
-              type='email'
-              placeholder='e.g., john.doe@example.com'
-              value={formData.email}
+              value={formData.alt_contact || ''}
               onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
+                setFormData({ ...formData, alt_contact: e.target.value })
               }
             />
           </div>
-          <div className='space-y-2'>
-            <Label htmlFor='password'>Password</Label>
-            <Input
-              id='password'
-              type='password'
-              value={formData.password}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
-            />
-          </div>
-          <div className='grid grid-cols-2 gap-4'>
-            <div className='space-y-2'>
-              <Label htmlFor='contact'>Contact Number</Label>
-              <Input
-                id='contact'
-                placeholder='e.g., +1234567890'
-                value={formData.contact}
-                onChange={(e) =>
-                  setFormData({ ...formData, contact: e.target.value })
-                }
-              />
-            </div>
-            <div className='space-y-2'>
-              <Label htmlFor='alt-contact'>
-                Alternative Contact (Optional)
-              </Label>
-              <Input
-                id='alt-contact'
-                placeholder='e.g., +0987654321'
-                value={formData.alt_contact}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    alt_contact: e.target.value,
-                  })
-                }
-              />
-            </div>
-          </div>
-          <div className='space-y-2'>
-            <Label htmlFor='position'>Position</Label>
-            <Select
-              value={formData.position}
-              onValueChange={(value) =>
-                setFormData({ ...formData, position: value })
-              }
-            >
-              <SelectTrigger className='w-full'>
-                <SelectValue placeholder='Select position' />
-              </SelectTrigger>
-              <SelectContent>
-                {positions.map((position) => (
-                  <SelectItem key={position} value={position}>
-                    {position.charAt(0).toUpperCase() + position.slice(1)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className='space-y-2'>
-            <Label htmlFor='address'>Address</Label>
-            <Input
-              onChange={(e) =>
-                setFormData({ ...formData, address: e.target.value })
-              }
-              id='address'
-              placeholder='e.g., 123 Main St, City'
-            />
-          </div>
-          <DialogFooter>
-            <Button
-              onClick={() => setIsAddDialogOpen(false)}
-              type='button'
-              variant='outline'
-            >
-              Cancel
-            </Button>
-            <Button type='submit'>
-              Save {role.charAt(0).toUpperCase() + role.slice(1)}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+        </div>
+
+        <div>
+          <Label>Position</Label>
+          <Select
+            value={formData.position}
+            onValueChange={(value) =>
+              setFormData({ ...formData, position: value })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder='Select position' />
+            </SelectTrigger>
+            <SelectContent>
+              {positions.map((position) => (
+                <SelectItem key={position} value={position}>
+                  {position.charAt(0).toUpperCase() + position.slice(1)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <Label>Address</Label>
+          <Input
+            value={formData.address || ''}
+            onChange={(e) =>
+              setFormData({ ...formData, address: e.target.value })
+            }
+          />
+        </div>
+
+        <div className='flex justify-end gap-3'>
+          <Button variant='outline' type='button' onClick={() => router.back()}>
+            Cancel
+          </Button>
+          <Button disabled={isLoading} type='submit'>
+            {isLoading ? 'Saving...' : 'Update User'}
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 }

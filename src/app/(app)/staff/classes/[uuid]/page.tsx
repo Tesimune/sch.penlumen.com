@@ -1,20 +1,30 @@
 'use client';
 
+import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { useUser } from '@/hooks/user';
-import { useClass } from '@/hooks/class';
-import { useStudent } from '@/hooks/student';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Download, Search } from 'lucide-react';
+import { Pen, Plus, Search } from 'lucide-react';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 import { toast } from 'sonner';
 import IsLoading from '@/components/is-loading';
 import StudentsTable from '@/components/students-table';
-import StudentDialog from '@/components/student-dialog';
+import SubjectsTable from '@/components/subjects-table';
+
+import { useUser } from '@/hooks/user';
+import { useClass } from '@/hooks/class';
+import { useStudent } from '@/hooks/student';
+import { useSubject } from '@/hooks/subject';
 
 interface User {
   uuid: string;
@@ -31,6 +41,12 @@ interface Class {
   name: string;
 }
 
+interface Subject {
+  uuid: string;
+  name: string;
+  class_uuid: string;
+}
+
 interface Student {
   uuid: string;
   name: string;
@@ -44,37 +60,27 @@ interface Student {
 }
 
 export default function StudentsPage() {
-  const { index: userIndex } = useUser();
   const { show: classShow } = useClass();
+  const { index: userIndex } = useUser();
+  const { index: subjectIndex } = useSubject();
   const { uuid } = useParams();
 
-  const { create, update, remove } = useStudent();
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [classes, setClasses] = useState<Class[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
-  const [parents, setParents] = useState<Parent[]>([]);
-  const [editUUID, setEditUUID] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
-    name: '',
-    avatar: '',
-    reg_number: '',
-    class_uuid: '',
-    parent_uuid: '',
-  });
+  const [subjects, setSubjects] = useState<Subject[]>([]);
 
   const fetchData = async () => {
     setIsLoading(true);
     try {
       const resClass = await classShow(uuid as string);
-      const resUser = await userIndex('parent');
+      const resSubject = await subjectIndex('subject');
 
-      console.log(resClass);
-
-      if (resUser && resClass.success) {
-        setParents(resUser.data.user);
+      if (resClass.success && resSubject.success) {
+        setSubjects(resSubject.data.subjects);
         setStudents(resClass.data.class.students);
+
         setClasses([
           ...classes,
           {
@@ -84,10 +90,9 @@ export default function StudentsPage() {
         ]);
       } else {
         toast(resClass.message || 'Something went wrong');
-        toast(resUser.message || 'Something went wrong');
+        toast(resSubject.message || 'Something went wrong');
       }
     } catch (error: any) {
-      console.log(error);
       toast(error.message || 'Something went wront');
     } finally {
       setIsLoading(false);
@@ -102,99 +107,9 @@ export default function StudentsPage() {
     student.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setFormData({ ...formData, avatar: e.target?.result as string });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    try {
-      let response;
-      if (editUUID) {
-        response = await update(editUUID, formData);
-      } else {
-        response = await create(formData);
-      }
-      if (response.success) {
-        fetchData();
-        setIsAddDialogOpen(false);
-        setFormData({
-          name: '',
-          avatar: '',
-          reg_number: '',
-          class_uuid: '',
-          parent_uuid: '',
-        });
-      } else {
-        toast.error(response.message || 'Something went wrong');
-      }
-    } catch (error: any) {
-      toast.error(error.message || 'Something went wrong');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const removeAvatar = () => {
-    setFormData({ ...formData, avatar: '' });
-  };
-
-  const handleEdit = (student: Student) => {
-    setIsAddDialogOpen(false);
-
-    setEditUUID(student.uuid);
-    setFormData({
-      name: student.name,
-      avatar: student.avatar,
-      reg_number: student.reg_number,
-      class_uuid: student.class_uuid,
-      parent_uuid: student.parent_uuid,
-    });
-
-    // Small delay to prevent dialog conflicts
-    setTimeout(() => {
-      setIsAddDialogOpen(true);
-    }, 10);
-  };
-
-  const handleDelete = async (student: Student) => {
-    if (confirm(`Are you sure you want to delete ${student.name}?`)) {
-      setIsLoading(true);
-      try {
-        const response = await remove(student.uuid);
-        if (response.success) {
-          fetchData();
-          toast.success('Student deleted successfully');
-        } else {
-          toast.error(response.message || 'Something went wrong');
-        }
-      } catch (error: any) {
-        toast.error(error.message || 'Something went wrong');
-      } finally {
-        setIsLoading(false);
-      }
-    }
-  };
-
-  const handleReset = () => {
-    setFormData({
-      name: '',
-      avatar: '',
-      reg_number: '',
-      class_uuid: '',
-      parent_uuid: '',
-    });
-    setEditUUID(null);
-    setIsAddDialogOpen(false);
-  };
+  const filteredSubjects = subjects.filter((subject) =>
+    subject.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   if (isLoading) {
     return <IsLoading />;
@@ -213,23 +128,27 @@ export default function StudentsPage() {
         </div>
         <div className='flex items-center gap-2'>
           <Button variant='outline' size='sm'>
-            <Download className='mr-2 h-4 w-4' />
-            Export
+            <Pen className='mr-1 h-4 w-4' />
+            Edit class
           </Button>
-          <StudentDialog
-            isAddDialogOpen={isAddDialogOpen}
-            setIsAddDialogOpen={setIsAddDialogOpen}
-            formData={formData}
-            setFormData={setFormData}
-            handleSubmit={handleSubmit}
-            handleReset={handleReset}
-            editUUID={editUUID}
-            setEditUUID={setEditUUID}
-            parents={parents}
-            classes={classes}
-            handleAvatarChange={handleAvatarChange}
-            removeAvatar={removeAvatar}
-          />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size='sm'>
+                <Plus className='mr-1 h-4 w-4' />
+                Add new
+              </Button>
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent align='end' className='w-44'>
+              <DropdownMenuItem asChild>
+                <Link href='/staff/students/create'>Add Student</Link>
+              </DropdownMenuItem>
+
+              <DropdownMenuItem asChild>
+                <Link href='/staff/subjects/create'>Add Subject</Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
@@ -239,24 +158,53 @@ export default function StudentsPage() {
         transition={{ duration: 0.5 }}
       >
         <Card>
-          <CardHeader className='flex flex-col gap-4 sm:flex-row sm:items-center'>
-            <div className='relative w-full'>
-              <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground' />
-              <Input
-                placeholder='Search students...'
-                className='pl-8'
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
+          <CardHeader className='pb-3'>
+            <Tabs defaultValue='students' className='w-full'>
+              {/* TAB BUTTONS */}
+              <TabsList className='grid w-full grid-cols-2'>
+                <TabsTrigger value='students'>Students</TabsTrigger>
+                <TabsTrigger value='subjects'>Subjects</TabsTrigger>
+              </TabsList>
+
+              {/* STUDENTS TAB */}
+              <TabsContent value='students' className='mt-4'>
+                <CardHeader className='p-0 pb-3'>
+                  <div className='relative w-full'>
+                    <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground' />
+                    <Input
+                      placeholder='Search students...'
+                      className='pl-8'
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
+                </CardHeader>
+
+                <CardContent className='p-0'>
+                  <StudentsTable filteredStudents={filteredStudents} />
+                </CardContent>
+              </TabsContent>
+
+              {/* SUBJECTS TAB */}
+              <TabsContent value='subjects' className='mt-4'>
+                <CardHeader className='p-0 pb-3'>
+                  <div className='relative w-full'>
+                    <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground' />
+                    <Input
+                      placeholder='Search subjects...'
+                      className='pl-8'
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
+                </CardHeader>
+
+                <CardContent className='p-0'>
+                  <SubjectsTable filteredSubjects={filteredSubjects} />
+                </CardContent>
+              </TabsContent>
+            </Tabs>
           </CardHeader>
-          <CardContent>
-            <StudentsTable
-              filteredStudents={filteredStudents}
-              handleEdit={handleEdit}
-              handleDelete={handleDelete}
-            />
-          </CardContent>
         </Card>
       </motion.div>
     </div>

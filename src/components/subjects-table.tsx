@@ -1,6 +1,4 @@
 import React from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Table,
   TableBody,
@@ -20,49 +18,28 @@ import {
 import { Button } from '@/components/ui/button';
 import { MenuSquareIcon } from 'lucide-react';
 import Link from 'next/link';
+import { useSubject } from '@/hooks/subject';
 import { toast } from 'sonner';
-import { useStudent } from '@/hooks/student';
 
-interface User {
+interface Subject {
   uuid: string;
   name: string;
-  email: string;
-}
-
-interface Parent {
-  user: User;
-}
-
-interface Class {
-  uuid: string;
-  name: string;
-}
-
-interface Student {
-  uuid: string;
-  name: string;
-  status: string;
-  parent: Parent;
-  class: Class;
-  reg_number: string;
-  avatar: string;
   class_uuid: string;
-  parent_uuid: string;
 }
 
-export default function StudentsTable({
-  filteredStudents,
+export default function SubjectsTable({
+  filteredSubjects,
 }: {
-  filteredStudents: Student[];
+  filteredSubjects: Subject[];
 }) {
-  const { remove } = useStudent();
+  const { remove } = useSubject();
 
-  const handleDelete = async (student: Student) => {
-    if (confirm(`Are you sure you want to delete ${student.name}?`)) {
+  const handleDelete = async (subject: Subject) => {
+    if (confirm(`Are you sure you want to delete ${subject.name}?`)) {
       try {
-        const response = await remove(student.uuid);
+        const response = await remove(subject.uuid);
         if (response.success) {
-          toast.success('Student deleted successfully');
+          toast.success('Subject deleted successfully');
         } else {
           toast.error(response.message || 'Something went wrong');
         }
@@ -79,44 +56,20 @@ export default function StudentsTable({
         <TableHeader>
           <TableRow>
             <TableHead>Name</TableHead>
-            <TableHead>Class</TableHead>
-            <TableHead>Status</TableHead>
             <TableHead className='text-right'>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredStudents.length === 0 ? (
+          {filteredSubjects.length === 0 ? (
             <TableRow>
               <TableCell colSpan={6} className='h-24 text-center'>
-                No students found.
+                No subjects found.
               </TableCell>
             </TableRow>
           ) : (
-            filteredStudents.map((student) => (
-              <TableRow key={student.uuid}>
-                <TableCell className='font-medium'>
-                  <div className='flex items-center gap-2'>
-                    <Avatar className='h-8 w-8'>
-                      <AvatarImage
-                        src={`/placeholder.svg?height=32&width=32&text=${student.name.charAt(
-                          0
-                        )}`}
-                      />
-                      <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    {student.name}
-                  </div>
-                </TableCell>
-                <TableCell>{student.class?.name || 'Current'}</TableCell>
-                <TableCell>
-                  <Badge
-                    variant={
-                      student.status === 'active' ? 'default' : 'secondary'
-                    }
-                  >
-                    {student.status}
-                  </Badge>
-                </TableCell>
+            filteredSubjects.map((subject) => (
+              <TableRow key={subject.uuid}>
+                <TableCell>{subject.name || 'Unknown'}</TableCell>
                 <TableCell className='text-right'>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -128,16 +81,16 @@ export default function StudentsTable({
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem>
-                        <Link href={`/staff/students/${student.uuid}`}>
-                          Show Student
+                        <Link href={`/staff/subjects/${subject.uuid}`}>
+                          Show Subject
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
-                        onClick={() => handleDelete(student)}
+                        onClick={() => handleDelete(subject)}
                         className='text-destructive'
                       >
-                        Delete Student
+                        Delete Subject
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

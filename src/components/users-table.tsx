@@ -1,22 +1,14 @@
 'use client';
-import { useUser } from '@/hooks/user';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
   Table,
-  TableBody,
-  TableCell,
   TableHead,
   TableHeader,
+  TableBody,
+  TableCell,
   TableRow,
 } from '@/components/ui/table';
 import {
@@ -29,10 +21,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MenuSquareIcon, Plus, Search } from 'lucide-react';
+import { MenuSquareIcon, Search } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useUser } from '@/hooks/user';
 import { toast } from 'sonner';
-import UserUpdate from './user-update';
+import Link from 'next/link';
 
 interface User {
   uuid: string;
@@ -51,28 +44,15 @@ interface Users {
 
 export default function UsersTable({
   role,
-  fetchData,
-  setIsLoading,
   users,
+  fetchData,
 }: {
   role: string;
-  fetchData: () => void;
-  setIsLoading: (loading: boolean) => void;
   users: Users[];
+  fetchData: () => void;
 }) {
   const { remove } = useUser();
   const [searchQuery, setSearchQuery] = useState('');
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [editUUID, setEditUUID] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    contact: '',
-    alt_contact: '',
-    position: '',
-    address: '',
-  });
 
   const filteredUsers = users.filter(
     (filter) =>
@@ -91,29 +71,8 @@ export default function UsersTable({
       )
   );
 
-  const handleEdit = async (user: any) => {
-    setIsAddDialogOpen(false);
-
-    setEditUUID(user.uuid);
-    setFormData({
-      name: user.name,
-      email: user.email,
-      contact: user.contact,
-      alt_contact: user.alt_contact,
-      position: user.position,
-      address: user.address,
-      password: '',
-    });
-
-    // Small delay to prevent dialog conflicts
-    setTimeout(() => {
-      setIsAddDialogOpen(true);
-    }, 10);
-  };
-
   const handleDelete = async (uuid: string) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
-      setIsLoading(true);
       try {
         const response = await remove(uuid);
         if (response.success) {
@@ -125,7 +84,6 @@ export default function UsersTable({
         toast.error(error.message || 'Failed to delete user');
       } finally {
         fetchData();
-        setIsLoading(false);
       }
     }
   };
@@ -151,16 +109,6 @@ export default function UsersTable({
 
   return (
     <div>
-      <UserUpdate
-        role={role}
-        editUUID={editUUID}
-        formData={formData}
-        setFormData={setFormData}
-        fetchData={fetchData}
-        setIsLoading={setIsLoading}
-        isAddDialogOpen={isAddDialogOpen}
-        setIsAddDialogOpen={setIsAddDialogOpen}
-      />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -261,17 +209,22 @@ export default function UsersTable({
                           <DropdownMenuContent align='end'>
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              onClick={() => handleEdit(filter.user)}
-                            >
-                              Edit {role}
+                            <DropdownMenuItem>
+                              <Link
+                                href={`/staff/${role}s/${filter.user.uuid}`}
+                                className='w-full'
+                              >
+                                Edit{' '}
+                                {role.charAt(0).toUpperCase() + role.slice(1)}
+                              </Link>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               onClick={() => handleDelete(filter.user.uuid)}
                               className='text-destructive'
                             >
-                              Delete Staff
+                              Delete{' '}
+                              {role.charAt(0).toUpperCase() + role.slice(1)}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>

@@ -1,18 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { useGrade } from '@/hooks/grade';
-import { Award, Download, MenuSquareIcon, Plus, Search } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { useEffect, useState } from 'react';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import { Award, Download, MenuSquareIcon, Plus, Search } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -38,10 +31,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
 import IsLoading from '@/components/is-loading';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { useGrade } from '@/hooks/grade';
 import { toast } from 'sonner';
 
 interface Grade {
@@ -200,14 +194,10 @@ export default function GradesPage() {
           </p>
         </div>
         <div className='flex items-center gap-2'>
-          <Button variant='outline' size='sm'>
-            <Download className='mr-2 h-4 w-4' />
-            Export
-          </Button>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger onClick={handleReset} asChild>
               <Button size='sm'>
-                <Plus className='mr-2 h-4 w-4' />
+                <Plus className='mr-1 h-4 w-4' />
                 Add Grade
               </Button>
             </DialogTrigger>

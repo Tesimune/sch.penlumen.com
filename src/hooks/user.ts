@@ -20,6 +20,22 @@ export const useUser = () => {
     }
   };
 
+  const show = async (uuid: string) => {
+    const response = await axiosInstance.get(`/api/v1/user/show/${uuid}`);
+    const data = response.data;
+    if (!data.success || !data.data) {
+      return {
+        success: false,
+        message: data.message || 'Something went wrong',
+      };
+    } else {
+      return {
+        success: true,
+        data: data.data,
+      };
+    }
+  };
+
   const create = async (userData: any) => {
     const response = await axiosInstance.post('/api/v1/user/create', {
       name: userData.name,
@@ -89,6 +105,7 @@ export const useUser = () => {
   };
 
   return {
+    show,
     index,
     create,
     update,

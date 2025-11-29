@@ -1,18 +1,12 @@
 'use client';
+
 import { toast } from 'sonner';
 import { useUser } from '@/hooks/user';
 import { useBranch } from '@/hooks/branch';
 import React, { useEffect, useState } from 'react';
-import { Plus } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -20,23 +14,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 
-export default function UserCreate({
-  role,
-  fetchData,
-  setIsLoading,
-}: {
-  role: string;
-  fetchData: () => void;
-  setIsLoading: (loading: boolean) => void;
-}) {
+export default function UserCreatePage({ role }: { role: string }) {
   const { create } = useUser();
   const { createAccess } = useBranch();
   const [positions, setPositions] = useState<string[]>([]);
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -59,53 +43,44 @@ export default function UserCreate({
   }, [role]);
 
   const addToBranch = async (uuid: string) => {
-    setIsLoading(true);
     try {
       const response = await createAccess(uuid);
       if (response.success) {
-        setFormData({
-          name: '',
-          email: '',
-          password: '',
-          contact: '',
-          alt_contact: '',
-          position: '',
-          address: '',
-          role,
-        });
-        setIsAddDialogOpen(false);
-        fetchData();
+        toast.success('User added to branch');
+        resetForm();
       } else {
-        toast.error(response.message || 'Something went wrong', {});
+        toast.error(response.message || 'Unable to add user to branch');
       }
     } catch (error: any) {
-      toast.error(error.message || 'Something went wrong');
-    } finally {
-      setIsLoading(false);
+      toast.error(error.message || 'Failed to add user');
     }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      email: '',
+      password: '',
+      contact: '',
+      alt_contact: '',
+      position: '',
+      address: '',
+      role,
+    });
   };
 
   const saveUser = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+
     try {
       const response = await create(formData);
 
       if (response.success) {
-        setFormData({
-          name: '',
-          email: '',
-          password: '',
-          contact: '',
-          alt_contact: '',
-          position: '',
-          address: '',
-          role,
-        });
-        fetchData();
-        setIsAddDialogOpen(false);
+        toast.success('User created successfully');
+        resetForm();
       } else {
-        toast.error(response.message || 'Something went wrong', {
+        toast.error(response.message || 'User already exists', {
           action: {
             label: 'Add to branch',
             onClick: () => addToBranch(response.data.user_uuid),
@@ -115,133 +90,122 @@ export default function UserCreate({
     } catch (error: any) {
       toast.error(error.message || 'Something went wrong');
     } finally {
-      fetchData();
+      setIsLoading(false);
     }
   };
 
   return (
-    <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-      <DialogTrigger asChild>
-        <Button size='sm'>
-          <Plus className='mr-2 h-4 w-4' />
-          Add {role.charAt(0).toUpperCase() + role.slice(1)}
-        </Button>
-      </DialogTrigger>
-      <DialogContent className='max-w-md max-h-[95vh] overflow-y-auto scroll-hidden'>
-        <DialogHeader>
-          <DialogTitle>
-            Add New {role.charAt(0).toUpperCase() + role.slice(1)}
-          </DialogTitle>
-          <DialogDescription>Create a new {role} account</DialogDescription>
-        </DialogHeader>
-        <form onSubmit={saveUser} className='space-y-4 py-4'>
-          <div className='space-y-2'>
-            <Label htmlFor='name'>Full Name</Label>
+    <div className='max-w-2xl mx-auto p-6'>
+      <div className='mb-6'>
+        <h1 className='text-xl font-semibold'>
+          Create New {role.charAt(0).toUpperCase() + role.slice(1)}
+        </h1>
+        <p className='text-muted-foreground'>
+          Fill the form below to register a new {role}.
+        </p>
+      </div>
+
+      <form onSubmit={saveUser} className='space-y-5'>
+        <div>
+          <Label>Full Name</Label>
+          <Input
+            placeholder='John Doe'
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            required
+          />
+        </div>
+
+        <div>
+          <Label>Email Address</Label>
+          <Input
+            type='email'
+            placeholder='john@example.com'
+            value={formData.email}
+            onChange={(e) =>
+              setFormData({ ...formData, email: e.target.value })
+            }
+            required
+          />
+        </div>
+
+        <div>
+          <Label>Password</Label>
+          <Input
+            type='password'
+            value={formData.password}
+            onChange={(e) =>
+              setFormData({ ...formData, password: e.target.value })
+            }
+            required
+          />
+        </div>
+
+        <div className='grid grid-cols-2 gap-4'>
+          <div>
+            <Label>Contact</Label>
             <Input
-              id='name'
-              placeholder='e.g., John Doe'
-              value={formData.name}
+              value={formData.contact}
+              placeholder='+234...'
               onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
+                setFormData({ ...formData, contact: e.target.value })
               }
             />
           </div>
-          <div className='space-y-2'>
-            <Label htmlFor='email'>Email</Label>
+
+          <div>
+            <Label>Alt Contact</Label>
             <Input
-              id='email'
-              type='email'
-              placeholder='e.g., john.doe@example.com'
-              value={formData.email}
+              value={formData.alt_contact}
+              placeholder='+234...'
               onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
+                setFormData({ ...formData, alt_contact: e.target.value })
               }
             />
           </div>
-          <div className='space-y-2'>
-            <Label htmlFor='password'>Password</Label>
-            <Input
-              id='password'
-              type='password'
-              value={formData.password}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
-            />
-          </div>
-          <div className='grid grid-cols-2 gap-4'>
-            <div className='space-y-2'>
-              <Label htmlFor='contact'>Contact Number</Label>
-              <Input
-                id='contact'
-                placeholder='e.g., +1234567890'
-                value={formData.contact}
-                onChange={(e) =>
-                  setFormData({ ...formData, contact: e.target.value })
-                }
-              />
-            </div>
-            <div className='space-y-2'>
-              <Label htmlFor='alt-contact'>
-                Alternative Contact (Optional)
-              </Label>
-              <Input
-                id='alt-contact'
-                placeholder='e.g., +0987654321'
-                value={formData.alt_contact}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    alt_contact: e.target.value,
-                  })
-                }
-              />
-            </div>
-          </div>
-          <div className='space-y-2'>
-            <Label htmlFor='position'>Position</Label>
-            <Select
-              value={formData.position}
-              onValueChange={(value) =>
-                setFormData({ ...formData, position: value })
-              }
-            >
-              <SelectTrigger className='w-full'>
-                <SelectValue placeholder='Select position' />
-              </SelectTrigger>
-              <SelectContent>
-                {positions.map((position) => (
-                  <SelectItem key={position} value={position}>
-                    {position.charAt(0).toUpperCase() + position.slice(1)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className='space-y-2'>
-            <Label htmlFor='address'>Address</Label>
-            <Input
-              onChange={(e) =>
-                setFormData({ ...formData, address: e.target.value })
-              }
-              id='address'
-              placeholder='e.g., 123 Main St, City'
-            />
-          </div>
-          <DialogFooter>
-            <Button
-              onClick={() => setIsAddDialogOpen(false)}
-              type='button'
-              variant='outline'
-            >
-              Cancel
-            </Button>
-            <Button type='submit'>
-              Save {role.charAt(0).toUpperCase() + role.slice(1)}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+        </div>
+
+        <div>
+          <Label>Position</Label>
+          <Select
+            value={formData.position}
+            onValueChange={(value) =>
+              setFormData({ ...formData, position: value })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder='Select position' />
+            </SelectTrigger>
+            <SelectContent>
+              {positions.map((position) => (
+                <SelectItem key={position} value={position}>
+                  {position.charAt(0).toUpperCase() + position.slice(1)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <Label>Address</Label>
+          <Input
+            placeholder='User home address...'
+            value={formData.address}
+            onChange={(e) =>
+              setFormData({ ...formData, address: e.target.value })
+            }
+          />
+        </div>
+
+        <div className='flex justify-end gap-3'>
+          <Button type='button' variant='outline' onClick={resetForm}>
+            Reset
+          </Button>
+          <Button type='submit' disabled={isLoading}>
+            {isLoading ? 'Saving...' : `Create ${role}`}
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 }

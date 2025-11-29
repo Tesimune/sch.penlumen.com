@@ -6,14 +6,14 @@ import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useClass } from '@/hooks/class';
 import { useUser } from '@/hooks/user';
-import { Download, Search } from 'lucide-react';
+import { Download, Plus, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { toast } from 'sonner';
 import IsLoading from '@/components/is-loading';
 import ClassesTable from '@/components/classes-table';
 import { Button } from '@/components/ui/button';
-import ClassDialog from '@/components/class-dialog';
+import Link from 'next/link';
 
 interface Class {
   uuid: string;
@@ -174,21 +174,11 @@ export default function ClassesPage() {
           </p>
         </div>
         <div className='flex items-center gap-2'>
-          <Button variant='outline' size='sm'>
-            <Download className='mr-2 h-4 w-4' />
-            Export
-          </Button>
-          <ClassDialog
-            isAddDialogOpen={isAddDialogOpen}
-            setIsAddDialogOpen={setIsAddDialogOpen}
-            teachers={teachers}
-            getTeacherName={getTeacherName}
-            editUUID={editUUID}
-            formData={formData}
-            setFormData={setFormData}
-            handleSubmit={handleSubmit}
-            handleReset={handleReset}
-          />
+          <Link href='/staff/classes/create'>
+            <Button size='sm'>
+              <Plus className='mr-1 h-4 w-4' /> Create Class
+            </Button>
+          </Link>
         </div>
       </div>
 
@@ -213,7 +203,6 @@ export default function ClassesPage() {
             <ClassesTable
               filteredClasses={filteredClasses}
               getTeacherName={getTeacherName}
-              handleEdit={handleEdit}
               handleDelete={handleDelete}
               searchQuery={searchQuery}
             />
