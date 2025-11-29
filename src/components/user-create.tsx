@@ -95,8 +95,8 @@ export default function UserCreatePage({ role }: { role: string }) {
   };
 
   return (
-    <div className='max-w-2xl mx-auto p-6'>
-      <div className='mb-6'>
+    <div className='max-w-2xl mx-auto px-6'>
+      <div className='mb-3'>
         <h1 className='text-xl font-semibold'>
           Create New {role.charAt(0).toUpperCase() + role.slice(1)}
         </h1>
@@ -105,8 +105,8 @@ export default function UserCreatePage({ role }: { role: string }) {
         </p>
       </div>
 
-      <form onSubmit={saveUser} className='space-y-5'>
-        <div>
+      <form onSubmit={saveUser} className='space-y-3'>
+        <div className='w-full space-y-2'>
           <Label>Full Name</Label>
           <Input
             placeholder='John Doe'
@@ -116,7 +116,7 @@ export default function UserCreatePage({ role }: { role: string }) {
           />
         </div>
 
-        <div>
+        <div className='w-full space-y-2'>
           <Label>Email Address</Label>
           <Input
             type='email'
@@ -129,7 +129,7 @@ export default function UserCreatePage({ role }: { role: string }) {
           />
         </div>
 
-        <div>
+        <div className='w-full space-y-2'>
           <Label>Password</Label>
           <Input
             type='password'
@@ -142,7 +142,7 @@ export default function UserCreatePage({ role }: { role: string }) {
         </div>
 
         <div className='grid grid-cols-2 gap-4'>
-          <div>
+          <div className='w-full space-y-2'>
             <Label>Contact</Label>
             <Input
               value={formData.contact}
@@ -153,7 +153,7 @@ export default function UserCreatePage({ role }: { role: string }) {
             />
           </div>
 
-          <div>
+          <div className='w-full space-y-2'>
             <Label>Alt Contact</Label>
             <Input
               value={formData.alt_contact}
@@ -165,15 +165,15 @@ export default function UserCreatePage({ role }: { role: string }) {
           </div>
         </div>
 
-        <div>
+        <div className='w-full space-y-2'>
           <Label>Position</Label>
           <Select
-            value={formData.position}
+            value={formData.position || ''}
             onValueChange={(value) =>
               setFormData({ ...formData, position: value })
             }
           >
-            <SelectTrigger>
+            <SelectTrigger className='w-full'>
               <SelectValue placeholder='Select position' />
             </SelectTrigger>
             <SelectContent>
@@ -186,7 +186,7 @@ export default function UserCreatePage({ role }: { role: string }) {
           </Select>
         </div>
 
-        <div>
+        <div className='w-full space-y-2'>
           <Label>Address</Label>
           <Input
             placeholder='User home address...'

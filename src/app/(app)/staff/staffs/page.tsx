@@ -67,15 +67,16 @@ export default function StaffPage() {
         </div>
         <div className='flex items-center gap-2'>
           <Link href='/staff/staffs/create'>
-            <Button size='sm'>
-              <Plus className='mr-1 h-4 w-4' /> Create Staff
+            <Button size='sm' className='flex items-center rounded-none'>
+              <Plus className='h-4 w-4' />
+              <span>Add New</span>
             </Button>
           </Link>
         </div>
       </div>
 
       <div>
-        <UsersIndex role='staff' users={staffs} fetchData={fetchData} />
+        <UsersIndex role='staffs' users={staffs} fetchData={fetchData} />
       </div>
     </div>
   );

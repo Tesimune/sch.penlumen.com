@@ -89,7 +89,7 @@ const ClassCreate = () => {
   };
 
   return (
-    <div>
+    <div className='max-w-2xl mx-auto px-6'>
       <form onSubmit={handleSubmit} className='space-y-4 py-4'>
         {/* Class Name */}
         <div className='space-y-2'>

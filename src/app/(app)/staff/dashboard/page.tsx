@@ -70,7 +70,7 @@ export default function DashboardPage() {
         animate='show'
       >
         <motion.div variants={item}>
-          <Card>
+          <Card className='shadow-none rounded-none'>
             <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
               <CardTitle className='text-sm font-medium'>
                 Total Parents
@@ -83,7 +83,7 @@ export default function DashboardPage() {
           </Card>
         </motion.div>
         <motion.div variants={item}>
-          <Card>
+          <Card className='shadow-none rounded-none'>
             <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
               <CardTitle className='text-sm font-medium'>
                 Total Staffs
@@ -96,7 +96,7 @@ export default function DashboardPage() {
           </Card>
         </motion.div>
         <motion.div variants={item}>
-          <Card>
+          <Card className='shadow-none rounded-none'>
             <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
               <CardTitle className='text-sm font-medium'>
                 Total Classes
@@ -109,7 +109,7 @@ export default function DashboardPage() {
           </Card>
         </motion.div>
         <motion.div variants={item}>
-          <Card>
+          <Card className='shadow-none rounded-none'>
             <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
               <CardTitle className='text-sm font-medium'>
                 Total Students

@@ -114,12 +114,12 @@ export default function UsersTable({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <Card>
+        <Card className='shadow-none rounded-none'>
           <CardHeader className='flex flex-col gap-4 sm:flex-row sm:items-center'>
             <div className='relative w-full'>
               <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground' />
               <Input
-                placeholder={`Search ${role}s...`}
+                placeholder={`Search ${role}...`}
                 className='pl-8'
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -211,10 +211,10 @@ export default function UsersTable({
                             <DropdownMenuSeparator />
                             <DropdownMenuItem>
                               <Link
-                                href={`/staff/${role}s/${filter.user.uuid}`}
+                                href={`/staff/${role}/${filter.user.uuid}`}
                                 className='w-full'
                               >
-                                Edit{' '}
+                                Show{' '}
                                 {role.charAt(0).toUpperCase() + role.slice(1)}
                               </Link>
                             </DropdownMenuItem>

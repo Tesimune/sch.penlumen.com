@@ -126,7 +126,7 @@ export default function StudentUpdate() {
   }
 
   return (
-    <div>
+    <div className='max-w-2xl mx-auto px-6'>
       <form onSubmit={handleSubmit} className='space-y-4 py-4'>
         {/* Avatar Upload Section */}
         {/* <div className='flex flex-col items-center space-y-4'>
