@@ -196,9 +196,9 @@ export default function GradesPage() {
         <div className='flex items-center gap-2'>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger onClick={handleReset} asChild>
-              <Button size='sm'>
-                <Plus className='mr-1 h-4 w-4' />
-                Add Grade
+              <Button size='sm' className='flex items-center rounded-none'>
+                <Plus className='h-4 w-4' />
+                <span>Add New</span>
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -280,7 +280,7 @@ export default function GradesPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <Card>
+        <Card className='shadow-none rounded-none'>
           <CardHeader className='flex flex-col gap-4 sm:flex-row sm:items-center'>
             <div className='relative w-full'>
               <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground' />

@@ -10,7 +10,8 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+
 import { useUser } from '@/hooks/user';
 import { toast } from 'sonner';
 
@@ -146,26 +147,19 @@ const ClassCreate = () => {
           />
         </div>
 
-        {/* Summary Card */}
-        {formData.name && formData.teacher_uuid && (
-          <Card className='bg-muted/50'>
-            <CardContent className='pt-4'>
-              <div className='text-sm space-y-1'>
-                <p>
-                  <span className='font-medium'>Class:</span> {formData.name}
-                </p>
-                <p>
-                  <span className='font-medium'>Teacher:</span>{' '}
-                  {getTeacherName(formData.teacher_uuid)}
-                </p>
-                <p>
-                  <span className='font-medium'>Capacity:</span>{' '}
-                  {formData.capacity}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        <div className='flex justify-end'>
+          <Button
+            type='submit'
+            disabled={
+              !formData.name ||
+              !formData.teacher_uuid ||
+              formData.capacity <= 0 ||
+              isLoading
+            }
+          >
+            Save Class
+          </Button>
+        </div>
       </form>
     </div>
   );

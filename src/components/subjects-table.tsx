@@ -28,8 +28,10 @@ interface Subject {
 }
 
 export default function SubjectsTable({
+  fetchData,
   filteredSubjects,
 }: {
+  fetchData: () => void;
   filteredSubjects: Subject[];
 }) {
   const { remove } = useSubject();
@@ -46,6 +48,7 @@ export default function SubjectsTable({
       } catch (error: any) {
         toast.error(error.message || 'Something went wrong');
       } finally {
+        fetchData();
       }
     }
   };
@@ -79,12 +82,6 @@ export default function SubjectsTable({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align='end'>
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem>
-                        <Link href={`/staff/subjects/${subject.uuid}`}>
-                          Show Subject
-                        </Link>
-                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         onClick={() => handleDelete(subject)}

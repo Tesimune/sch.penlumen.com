@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -22,6 +22,8 @@ import { MenuSquareIcon } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { useStudent } from '@/hooks/student';
+import { useResult } from '@/hooks/result';
+import { useRouter } from 'next/navigation';
 
 interface User {
   uuid: string;
@@ -55,7 +57,27 @@ export default function StudentsTable({
 }: {
   filteredStudents: Student[];
 }) {
+  const router = useRouter();
+  const { create } = useResult();
   const { remove } = useStudent();
+
+  const [loading, setLoading] = useState(false);
+
+  const generateReport = async (student: Student) => {
+    try {
+      setLoading(true);
+      const response = await create(student.uuid);
+      if (response.success) {
+        router.push(`/staff/reports/${response.data.result.uuid}`);
+      } else {
+        toast.error(response.message || 'Something went wrong');
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Something went wrong');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleDelete = async (student: Student) => {
     if (confirm(`Are you sure you want to delete ${student.name}?`)) {
@@ -131,6 +153,12 @@ export default function StudentsTable({
                         <Link href={`/staff/students/${student.uuid}`}>
                           Show Student
                         </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        disabled={loading}
+                        onClick={() => generateReport(student)}
+                      >
+                        Generate Report
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem

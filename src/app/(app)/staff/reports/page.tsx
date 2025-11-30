@@ -83,15 +83,12 @@ interface ReportsPageProps {
 
 export default function ReportsPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [classFilter, setClassFilter] = useState('all');
-  const [gradeFilter, setGradeFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('PENDING');
   const [reports, setReports] = useState<Report[]>([]);
 
   const { index } = useResult();
   const fetchedReports = async () => {
-    const result = await index();
-    console.log(result);
+    const result = await index(statusFilter as string);
     setReports(result.data.results);
   };
 
@@ -107,30 +104,22 @@ export default function ReportsPage() {
         .includes(searchQuery.toLowerCase()) ||
       report.uuid.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesStatus =
-      statusFilter === 'all' || report.status === statusFilter;
-    const matchesClass =
-      classFilter === 'all' || report.class_name === classFilter;
-
-    return matchesSearch && matchesStatus && matchesClass;
+    return matchesSearch;
   });
-
-  // Get unique values for filters
-  const uniqueClasses = [...new Set(reports.map((r) => r.class_name))].sort();
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      pending: {
+      PENDING: {
         variant: 'secondary' as const,
         icon: Clock,
         color: 'text-orange-600',
       },
-      approved: {
+      APPROVED: {
         variant: 'default' as const,
         icon: CheckCircle,
         color: 'text-green-600',
       },
-      rejected: {
+      REJECTED: {
         variant: 'destructive' as const,
         icon: XCircle,
         color: 'text-red-600',
@@ -148,6 +137,10 @@ export default function ReportsPage() {
     );
   };
 
+  const handleDelete = async (report: Report) => {
+    // Implement delete functionality here
+  };
+
   return (
     <div className='space-y-6'>
       {/* Header */}
@@ -161,7 +154,7 @@ export default function ReportsPage() {
       </div>
 
       {/* Filters and Search */}
-      <Card>
+      <Card className='shadow-none rounded-none'>
         <CardHeader className='flex flex-col gap-4 sm:flex-row sm:items-center'>
           <div className='flex flex-col sm:flex-row w-full gap-4 mb-6'>
             <div className='relative w-full'>
@@ -178,23 +171,9 @@ export default function ReportsPage() {
                 <SelectValue placeholder='Status' />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value='all'>All Status</SelectItem>
-                <SelectItem value='pending'>Pending</SelectItem>
-                <SelectItem value='approved'>Approved</SelectItem>
-                <SelectItem value='rejected'>Rejected</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={classFilter} onValueChange={setClassFilter}>
-              <SelectTrigger className='w-full sm:w-40'>
-                <SelectValue placeholder='Class' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='all'>All Classes</SelectItem>
-                {uniqueClasses.map((className) => (
-                  <SelectItem key={className} value={className}>
-                    {className}
-                  </SelectItem>
-                ))}
+                <SelectItem value='PENDING'>PENDING</SelectItem>
+                <SelectItem value='APPROVED'>APPROVED</SelectItem>
+                <SelectItem value='REJECTED'>REJECTED</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -220,10 +199,7 @@ export default function ReportsPage() {
                       <div className='flex flex-col items-center gap-2'>
                         <FileText className='h-8 w-8 text-muted-foreground opacity-50' />
                         <p className='text-muted-foreground'>
-                          {searchQuery ||
-                          statusFilter !== 'all' ||
-                          classFilter !== 'all' ||
-                          gradeFilter !== 'all'
+                          {searchQuery
                             ? 'No reports found matching your filters.'
                             : 'No reports available.'}
                         </p>
@@ -292,20 +268,16 @@ export default function ReportsPage() {
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem>
-                              <Link
-                                href={`/staff/reports/${report.student.uuid}`}
-                              >
+                              <Link href={`/staff/reports/${report.uuid}`}>
                                 Show Report
                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem>
-                              <Link
-                                href={`/report/${report.student.uuid}`}
-                                target='_blank'
-                              >
-                                Generate Report
-                              </Link>
+                            <DropdownMenuItem
+                              onClick={() => handleDelete(report)}
+                              className='text-destructive'
+                            >
+                              Delete Report
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>

@@ -247,48 +247,19 @@ export default function StudentUpdate() {
           </Select>
         </div>
 
-        {/* Summary Card */}
-        {formData.name && formData.class_uuid && (
-          <Card className='bg-muted/50'>
-            <CardContent className='pt-4'>
-              <div className='text-sm space-y-1'>
-                <p>
-                  <span className='font-medium'>Student:</span> {formData.name}
-                </p>
-                <p>
-                  <span className='font-medium'>Registration:</span>{' '}
-                  {formData.reg_number}
-                </p>
-                <p>
-                  <span className='font-medium'>Class:</span>{' '}
-                  {classes.find((c) => c.uuid === formData.class_uuid)?.name}
-                </p>
-                <p>
-                  <span className='font-medium'>Parent:</span>{' '}
-                  {
-                    parents.find((p) => p.user.uuid === formData.parent_uuid)
-                      ?.user.name
-                  }
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        <Button type='button' variant='outline'>
-          Cancel
-        </Button>
-        <Button
-          type='submit'
-          disabled={
-            !formData.name ||
-            !formData.reg_number ||
-            !formData.parent_uuid ||
-            !formData.class_uuid
-          }
-        >
-          Save Student
-        </Button>
+        <div className='flex justify-end'>
+          <Button
+            type='submit'
+            disabled={
+              !formData.name ||
+              !formData.reg_number ||
+              !formData.parent_uuid ||
+              !formData.class_uuid
+            }
+          >
+            Save Student
+          </Button>
+        </div>
       </form>
     </div>
   );

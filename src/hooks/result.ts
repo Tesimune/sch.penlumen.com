@@ -1,25 +1,25 @@
 import { axiosInstance } from '@/lib/axios';
 
 type ResultData = {
-  teacher_remark: string;
-  principal_remark: string;
+  teacher_remark: string | null;
+  principal_remark: string | null;
   status: 'APPROVED' | 'PENDING' | 'REJECTED';
 };
 
 type AssessmentObject = {
   uuid: string;
+  subject: string;
   assignment: number;
   assessment: number;
-  exam: number;
-};
-
-type AssessmentData = {
-  assessments: AssessmentObject[];
+  examination: number;
+  overall: number;
 };
 
 export const useResult = () => {
-  const index = async () => {
-    const response = await axiosInstance.get('/api/v1/result/index');
+  const index = async (statusFilter: string) => {
+    const response = await axiosInstance.get(
+      `/api/v1/result/index?status=${statusFilter}`
+    );
     const data = response.data;
 
     if (!data.success || !data.data) {
@@ -54,8 +54,29 @@ export const useResult = () => {
     }
   };
 
-  const create = async () => {
-    const response = await axiosInstance.post('/api/v1/result/create');
+  const view = async (result_uuid: string) => {
+    const response = await axiosInstance.get(
+      `/api/v1/result/view/${result_uuid}`
+    );
+    const data = response.data;
+
+    if (!data.success || !data.data) {
+      return {
+        success: false,
+        message: data.message || 'Something went wrong',
+      };
+    } else {
+      return {
+        success: true,
+        data: data.data,
+      };
+    }
+  };
+
+  const create = async (student_uuid: string) => {
+    const response = await axiosInstance.post(
+      `/api/v1/result/create/${student_uuid}`
+    );
     const data = response.data;
 
     if (!data.success || !data.data) {
@@ -72,15 +93,15 @@ export const useResult = () => {
   };
 
   const update = async (
-    student_uuid: string,
+    result_uuid: string,
     resultData: ResultData,
-    assessmentData: AssessmentData
+    assessmentData: AssessmentObject[]
   ) => {
     const response = await axiosInstance.patch(
-      `/api/v1/result/update/${student_uuid}`,
+      `/api/v1/result/update/${result_uuid}`,
       {
         result: resultData,
-        assessmentData: assessmentData,
+        assessments: assessmentData,
       }
     );
     const data = response.data;
@@ -117,6 +138,8 @@ export const useResult = () => {
   };
 
   return {
+    show,
+    view,
     index,
     create,
     update,

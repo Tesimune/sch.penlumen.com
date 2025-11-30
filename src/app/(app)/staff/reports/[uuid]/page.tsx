@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Clock, Save, Edit, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,75 +18,69 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import Link from 'next/link';
+import { useResult } from '@/hooks/result';
+import { useParams } from 'next/navigation';
+import IsLoading from '@/components/is-loading';
 
-interface Assessment {
+interface StudentData {
   uuid: string;
-  result_uuid: string;
-  subject: string;
-  assignment: number;
-  assesment: number;
-  examination: number;
-  overall: number;
-  grade: string;
+  name: string;
+  reg_number: string;
+  avatar: string | null;
 }
 
-export default function EditableReportPage() {
-  const [isEditing, setIsEditing] = useState(false);
+interface ReportData {
+  uuid: string;
+  class_name: string;
+  student: StudentData;
+  student_uuid: string;
+  overall: number;
+  teacher_remark: string | null;
+  principal_remark: string | null;
+  created_at: string;
+  updated_at: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+}
 
-  const originalReport = {
-    id: 1,
-    uuid: 'report-001',
-    student_uuid: 'student-001',
-    class_name: 'JSS 2A',
-    overall: 100,
-    remark: 'Excellent performance across all subjects',
-    created_at: '2024-01-15T10:00:00Z',
-    updated_at: '2024-01-16T14:30:00Z',
-    status: 'approved',
-    approved_by: 'Mrs. Johnson',
-    approved_at: '2024-01-16T14:30:00Z',
-    student: {
-      uuid: 'student-001',
-      name: 'Alice Johnson',
-      reg_number: 'STU001',
-      avatar: '/placeholder.svg?height=40&width=40',
-      class_name: 'JSS 2A',
-      branch: 'Main Campus',
-    },
-    assessments: [
-      {
-        uuid: 'assess-001',
-        result_uuid: 'report-001',
-        subject: 'Mathematics',
-        assignment: 4,
-        assesment: 12,
-        examination: 52,
-        overall: 68,
-        grade: 'A',
-      },
-      {
-        uuid: 'assess-002',
-        result_uuid: 'report-001',
-        subject: 'English Language',
-        assignment: 5,
-        assesment: 14,
-        examination: 55,
-        overall: 74,
-        grade: 'A',
-      },
-    ],
-    teacherRemark:
-      'Student shows excellent understanding of concepts and consistent performance.',
-    principalRemark:
-      'Outstanding academic achievement. Keep up the excellent work.',
+type AssessmentObject = {
+  uuid: string;
+  subject: string;
+  assignment: number;
+  assessment: number;
+  examination: number;
+  overall: number;
+};
+
+export default function page() {
+  const { uuid } = useParams();
+  const { view, update } = useResult();
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [report, setReport] = useState<ReportData | null>(null);
+  const [assessments, setAssessments] = useState<AssessmentObject[]>([]);
+
+  const fetchData = async () => {
+    try {
+      const response = await view(uuid as string);
+      console.log(response);
+      if (response.success) {
+        setReport(response.data.result);
+        setAssessments(response.data.result.assessments || []);
+      } else {
+        console.error(response.message);
+      }
+    } catch (error) {
+      console.error('An error occurred while fetching the report data.', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const [editableReport, setEditableReport] = useState(originalReport);
-  const [editableAssessments, setEditableAssessments] = useState<Assessment[]>(
-    originalReport.assessments
-  );
+  useEffect(() => {
+    fetchData();
+  }, []);
 
-  // Calculate grade based on overall score
   const calculateGrade = (overall: number): string => {
     if (overall >= 70) return 'A';
     if (overall >= 60) return 'B';
@@ -95,20 +89,17 @@ export default function EditableReportPage() {
     return 'F';
   };
 
-  // Update assessment scores and recalculate overall and grade
   const updateAssessment = (
-    uuid: string,
-    field: 'assignment' | 'assesment' | 'examination',
+    assessmentUuid: string,
+    field: string,
     value: number
   ) => {
-    setEditableAssessments((prev) =>
-      prev.map((assessment) => {
-        if (assessment.uuid === uuid) {
+    setAssessments((prevAssessments) =>
+      prevAssessments.map((assessment) => {
+        if (assessment.uuid === assessmentUuid) {
           const updated = { ...assessment, [field]: value };
-          // Recalculate overall and grade
           updated.overall =
-            updated.assignment + updated.assesment + updated.examination;
-          updated.grade = calculateGrade(updated.overall);
+            updated.assignment + updated.assessment + updated.examination;
           return updated;
         }
         return assessment;
@@ -117,62 +108,65 @@ export default function EditableReportPage() {
   };
 
   const updateRemark = (
-    field: 'teacherRemark' | 'principalRemark',
+    field: 'teacher_remark' | 'principal_remark',
     value: string
   ) => {
-    setEditableReport((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setReport((prev) => (prev ? { ...prev, [field]: value } : null));
   };
 
-  const handleSave = () => {
-    // Here you would typically save to your backend
-    console.log('Saving report:', {
-      ...editableReport,
-      assessments: editableAssessments,
-    });
+  const handleSave = async () => {
     setIsEditing(false);
-    // Show success message or handle response
+    try {
+      setIsLoading(true);
+      const response = await update(
+        report!.uuid,
+        {
+          teacher_remark: report!.teacher_remark,
+          principal_remark: report!.principal_remark,
+          status: report!.status,
+        },
+        assessments
+      );
+      if (response.success) {
+        setReport(response.data.result);
+        setAssessments(response.data.result.assessments || []);
+      } else {
+        console.error(response.message);
+      }
+    } catch (error) {
+      console.error('An error occurred while saving the report.', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleCancel = () => {
-    // Reset to original values
-    setEditableReport(originalReport);
-    setEditableAssessments(originalReport.assessments);
     setIsEditing(false);
   };
 
-  const getGradeBadge = (grade: string) => {
+  const getGradeBadge = (grade: string | null) => {
     const gradeColors: Record<string, string> = {
-      'A+': 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
-      A: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
-      'A-': 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-300',
-      'B+': 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
-      B: 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300',
-      'B-': 'bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-200',
-      'C+': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400',
-      C: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-300',
-      D: 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400',
-      F: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400',
+      'A+': 'bg-green-700 text-green-50',
+      A: 'bg-green-700 text-green-50',
+      'A-': 'bg-green-600 text-green-50',
+      'B+': 'bg-blue-700 text-blue-50',
+      B: 'bg-blue-700 text-blue-50',
+      'B-': 'bg-blue-600 text-blue-50',
+      'C+': 'bg-gray-600 text-gray-50',
+      C: 'bg-gray-600 text-gray-50',
+      D: 'bg-gray-500 text-gray-50',
+      F: 'bg-red-700 text-red-50',
     };
-    return gradeColors[grade] || 'bg-gray-100 text-gray-800';
+    return gradeColors[grade || 'F'] || 'bg-gray-600 text-gray-50';
   };
 
-  // Calculate overall report score
-  const calculateOverallScore = () => {
-    if (editableAssessments.length === 0) return 0;
-    const total = editableAssessments.reduce(
-      (sum, assessment) => sum + assessment.overall,
-      0
-    );
-    return Math.round(total / editableAssessments.length);
-  };
+  if (isLoading || !report) {
+    return <IsLoading />;
+  }
 
   return (
     <div className='space-y-6 p-6'>
-      {/* Header with Edit Controls */}
-      <div className='flex justify-between items-center'>
+      <div className='flex justify-between items-center border-b pb-6'>
         <h1 className='text-2xl font-bold'>Student Report Card</h1>
         <div className='flex gap-2'>
           {!isEditing ? (
@@ -181,10 +175,7 @@ export default function EditableReportPage() {
                 <Edit className='h-4 w-4' />
                 Edit Report
               </Button>
-              <Link
-                href={`/report/${editableReport.student.uuid}`}
-                target='_blank'
-              >
+              <Link href={`/report/${report.uuid}`} target='_blank'>
                 <Button className='gap-2'>
                   <Save className='h-4 w-4' />
                   <span>Generate Report</span>
@@ -211,38 +202,36 @@ export default function EditableReportPage() {
       </div>
 
       {/* Student Information Card */}
-      <Card>
-        <CardHeader>
+      <Card className='shadow-none rounded-none'>
+        <CardHeader className='border-b border-border'>
           <CardTitle className='text-lg'>Student Information</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className='flex items-center gap-4 mb-4'>
+        <CardContent className='pt-6'>
+          <div className='flex items-center gap-4'>
             <Avatar className='h-16 w-16'>
               <AvatarImage
-                src={editableReport.student.avatar || '/placeholder.svg'}
+                src={report.student.avatar || '/placeholder.svg'}
+                alt={report.student.name}
               />
-              <AvatarFallback className='text-xl'>
-                {editableReport.student.name.charAt(0)}
+              <AvatarFallback>
+                {report.student.name.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <div className='flex-1'>
-              <h3 className='text-xl font-semibold'>
-                {editableReport.student.name}
-              </h3>
-              <p className='text-muted-foreground'>
-                {editableReport.student.reg_number}
+              <h3 className='text-xl font-semibold'>{report.student.name}</h3>
+              <p className='text-sm text-muted-foreground'>
+                {report.student.reg_number}
               </p>
-              <div className='flex items-center gap-4 mt-2'>
-                <Badge variant='outline'>{editableReport.class_name}</Badge>
-                <Badge variant='outline'>{editableReport.student.branch}</Badge>
+              <div className='flex items-center gap-4 mt-3'>
+                <Badge variant='outline'>{report.class_name}</Badge>
                 <Badge
                   className={
-                    calculateOverallScore() >= 50
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-red-100 text-red-800'
+                    report.overall >= 50
+                      ? 'bg-green-700 text-green-50'
+                      : 'bg-red-700 text-red-50'
                   }
                 >
-                  Overall: {calculateOverallScore()}%
+                  Overall: {report.overall}%
                 </Badge>
               </div>
             </div>
@@ -251,8 +240,8 @@ export default function EditableReportPage() {
       </Card>
 
       {/* Assessments Table */}
-      <Card>
-        <CardHeader>
+      <Card className='shadow-none rounded-none'>
+        <CardHeader className='border-b border-border'>
           <CardTitle className='text-lg'>Subject Assessments</CardTitle>
           {isEditing && (
             <p className='text-sm text-muted-foreground'>
@@ -261,11 +250,11 @@ export default function EditableReportPage() {
             </p>
           )}
         </CardHeader>
-        <CardContent>
+        <CardContent className='pt-6'>
           <div className='overflow-x-auto'>
             <Table>
               <TableHeader>
-                <TableRow>
+                <TableRow className='border-b border-border'>
                   <TableHead>Subject</TableHead>
                   <TableHead className='text-center'>Assignment</TableHead>
                   <TableHead className='text-center'>Assessment</TableHead>
@@ -275,8 +264,11 @@ export default function EditableReportPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {editableAssessments.map((assessment) => (
-                  <TableRow key={assessment.uuid}>
+                {assessments.map((assessment) => (
+                  <TableRow
+                    key={assessment.uuid}
+                    className='border-b border-border'
+                  >
                     <TableCell className='font-medium'>
                       {assessment.subject}
                     </TableCell>
@@ -306,18 +298,18 @@ export default function EditableReportPage() {
                           type='number'
                           min='0'
                           max='15'
-                          value={assessment.assesment}
+                          value={assessment.assessment}
                           onChange={(e) =>
                             updateAssessment(
                               assessment.uuid,
-                              'assesment',
+                              'assessment',
                               Number(e.target.value)
                             )
                           }
                           className='w-16 text-center'
                         />
                       ) : (
-                        assessment.assesment
+                        assessment.assessment
                       )}
                     </TableCell>
                     <TableCell className='text-center'>
@@ -344,8 +336,12 @@ export default function EditableReportPage() {
                       {assessment.overall}
                     </TableCell>
                     <TableCell className='text-center'>
-                      <Badge className={getGradeBadge(assessment.grade)}>
-                        {assessment.grade}
+                      <Badge
+                        className={getGradeBadge(
+                          calculateGrade(assessment.overall)
+                        )}
+                      >
+                        {calculateGrade(assessment.overall)}
                       </Badge>
                     </TableCell>
                   </TableRow>
@@ -357,11 +353,11 @@ export default function EditableReportPage() {
       </Card>
 
       {/* Report Summary with Editable Remarks */}
-      <Card>
-        <CardHeader>
+      <Card className='shadow-none rounded-none'>
+        <CardHeader className='border-b border-border'>
           <CardTitle className='text-lg'>Report Summary</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className='pt-6'>
           <div className='space-y-6'>
             {/* Teacher's Remark */}
             <div>
@@ -370,16 +366,18 @@ export default function EditableReportPage() {
               </Label>
               {isEditing ? (
                 <Textarea
-                  value={editableReport.teacherRemark}
+                  value={report.teacher_remark || ''}
                   onChange={(e) =>
-                    updateRemark('teacherRemark', e.target.value)
+                    updateRemark('teacher_remark', e.target.value)
                   }
                   placeholder="Enter teacher's remark..."
                   className='min-h-[80px]'
                 />
               ) : (
-                <div className='p-3 bg-muted/50 rounded-md'>
-                  <p className='text-sm'>{editableReport.teacherRemark}</p>
+                <div className='p-3 bg-muted border border-border'>
+                  <p className='text-sm'>
+                    {report.teacher_remark || 'No remark provided'}
+                  </p>
                 </div>
               )}
             </div>
@@ -391,49 +389,36 @@ export default function EditableReportPage() {
               </Label>
               {isEditing ? (
                 <Textarea
-                  value={editableReport.principalRemark}
+                  value={report.principal_remark || ''}
                   onChange={(e) =>
-                    updateRemark('principalRemark', e.target.value)
+                    updateRemark('principal_remark', e.target.value)
                   }
                   placeholder="Enter principal's remark..."
                   className='min-h-[80px]'
                 />
               ) : (
-                <div className='p-3 bg-muted/50 rounded-md'>
-                  <p className='text-sm'>{editableReport.principalRemark}</p>
+                <div className='p-3 bg-muted border border-border'>
+                  <p className='text-sm'>
+                    {report.principal_remark || 'No remark provided'}
+                  </p>
                 </div>
               )}
             </div>
 
             {/* Report Metadata */}
-            <div className='grid grid-cols-2 gap-4 text-sm pt-4 border-t'>
+            <div className='grid grid-cols-2 gap-4 text-sm pt-4 border-t border-border'>
               <div>
                 <Label className='text-sm font-medium'>Created Date</Label>
                 <p className='mt-1'>
-                  {new Date(editableReport.created_at).toLocaleString()}
+                  {new Date(report.created_at).toLocaleString()}
                 </p>
               </div>
               <div>
                 <Label className='text-sm font-medium'>Last Updated</Label>
                 <p className='mt-1'>
-                  {new Date(editableReport.updated_at).toLocaleString()}
+                  {new Date(report.updated_at).toLocaleString()}
                 </p>
               </div>
-              {editableReport.approved_by && (
-                <>
-                  <div>
-                    <Label className='text-sm font-medium'>Approved By</Label>
-                    <p className='mt-1'>{editableReport.approved_by}</p>
-                  </div>
-                  <div>
-                    <Label className='text-sm font-medium'>Approval Date</Label>
-                    <p className='mt-1'>
-                      {editableReport.approved_at &&
-                        new Date(editableReport.approved_at).toLocaleString()}
-                    </p>
-                  </div>
-                </>
-              )}
             </div>
           </div>
         </CardContent>
@@ -441,9 +426,9 @@ export default function EditableReportPage() {
 
       {/* Save Confirmation */}
       {isEditing && (
-        <Card className='border-orange-200 bg-orange-50/50'>
+        <Card className='shadow-none rounded-none'>
           <CardContent className='pt-6'>
-            <div className='flex items-center gap-2 text-orange-800'>
+            <div className='flex items-center gap-2 text-foreground'>
               <Clock className='h-4 w-4' />
               <p className='text-sm font-medium'>
                 You have unsaved changes. Remember to save your edits before

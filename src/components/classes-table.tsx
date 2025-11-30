@@ -137,6 +137,13 @@ export default function ClassesTable({
                           Show Class
                         </Link>
                       </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Link
+                          href={`/staff/classes/subjects?class=${classItem.uuid}`}
+                        >
+                          Show Subjects
+                        </Link>
+                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         onClick={() => handleDelete(classItem)}
