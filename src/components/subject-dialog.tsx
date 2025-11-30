@@ -42,7 +42,7 @@ interface Teacher {
   user: User;
 }
 
-const ClassDialog = ({
+const SubjectDialog = ({
   isAddDialogOpen,
   setIsAddDialogOpen,
   teachers,
@@ -72,7 +72,7 @@ const ClassDialog = ({
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogTrigger onClick={handleReset} asChild>
           <Button size='sm'>
-            <Plus className='mr-2 h-4 w-4' />
+            <Plus className='mr-1 h-4 w-4' />
             Add Class
           </Button>
         </DialogTrigger>
@@ -192,4 +192,4 @@ const ClassDialog = ({
   );
 };
 
-export default ClassDialog;
+export default SubjectDialog;

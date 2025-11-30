@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -20,6 +20,10 @@ import {
 import { Button } from '@/components/ui/button';
 import { MenuSquareIcon } from 'lucide-react';
 import Link from 'next/link';
+import { toast } from 'sonner';
+import { useStudent } from '@/hooks/student';
+import { useResult } from '@/hooks/result';
+import { useRouter } from 'next/navigation';
 
 interface User {
   uuid: string;
@@ -50,13 +54,47 @@ interface Student {
 
 export default function StudentsTable({
   filteredStudents,
-  handleEdit,
-  handleDelete,
 }: {
   filteredStudents: Student[];
-  handleEdit: (student: Student) => void;
-  handleDelete: (student: Student) => void;
 }) {
+  const router = useRouter();
+  const { create } = useResult();
+  const { remove } = useStudent();
+
+  const [loading, setLoading] = useState(false);
+
+  const generateReport = async (student: Student) => {
+    try {
+      setLoading(true);
+      const response = await create(student.uuid);
+      if (response.success) {
+        router.push(`/staff/reports/${response.data.result.uuid}`);
+      } else {
+        toast.error(response.message || 'Something went wrong');
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Something went wrong');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (student: Student) => {
+    if (confirm(`Are you sure you want to delete ${student.name}?`)) {
+      try {
+        const response = await remove(student.uuid);
+        if (response.success) {
+          toast.success('Student deleted successfully');
+        } else {
+          toast.error(response.message || 'Something went wrong');
+        }
+      } catch (error: any) {
+        toast.error(error.message || 'Something went wrong');
+      } finally {
+      }
+    }
+  };
+
   return (
     <div>
       <Table>
@@ -113,11 +151,14 @@ export default function StudentsTable({
                       <DropdownMenuSeparator />
                       <DropdownMenuItem>
                         <Link href={`/staff/students/${student.uuid}`}>
-                          Show Reports
+                          Show Student
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleEdit(student)}>
-                        Edit Student
+                      <DropdownMenuItem
+                        disabled={loading}
+                        onClick={() => generateReport(student)}
+                      >
+                        Generate Report
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem

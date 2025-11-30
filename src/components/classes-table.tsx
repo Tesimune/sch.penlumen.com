@@ -34,13 +34,11 @@ export default function ClassesTable({
   filteredClasses,
   searchQuery,
   getTeacherName,
-  handleEdit,
   handleDelete,
 }: {
   filteredClasses: Class[];
   searchQuery: string;
   getTeacherName: (teacherUuid: string) => string;
-  handleEdit: (classItem: Class) => void;
   handleDelete: (classItem: Class) => void;
 }) {
   return (
@@ -139,8 +137,12 @@ export default function ClassesTable({
                           Show Class
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleEdit(classItem)}>
-                        Edit Class
+                      <DropdownMenuItem>
+                        <Link
+                          href={`/staff/classes/subjects?class=${classItem.uuid}`}
+                        >
+                          Show Subjects
+                        </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem

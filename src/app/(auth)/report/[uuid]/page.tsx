@@ -1,202 +1,81 @@
 'use client';
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { PrinterIcon as Print, Download } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Printer as Print } from 'lucide-react';
 
-interface Subject {
+import { Button } from '@/components/ui/button';
+import IsLoading from '@/components/is-loading';
+
+import { useResult } from '@/hooks/result';
+import { useParams } from 'next/navigation';
+
+interface StudentData {
+  uuid: string;
+  name: string;
+  reg_number: string;
+  avatar: string | null;
+}
+
+interface AssessmentObject {
   subject: string;
   assignment: number;
   assesment: number;
   examination: number;
-  total: number;
-  grade: string;
-  remark: string;
+  overall: number;
 }
 
-interface StudentResult {
-  name: string;
-  session: string;
-  class: string;
-  term: string;
-  position: string;
-  noOfStudents: string;
-  closingDate: string;
-  resumptionDate: string;
-  subjects: Subject[];
-  affectiveSkills: {
-    punctuality: string;
-    politeness: string;
-    neatness: string;
-    honesty: string;
-    leadershipSkills: string;
-    attentiveness: string;
-    cooperation: string;
-  };
-  teacherRemark: string;
-  principalRemark: string;
+interface ResultData {
+  student: StudentData;
+  assessments: AssessmentObject[];
+  teacher_remark: string;
+  principal_remark: string;
 }
 
 export default function TraditionalResultSheet() {
+  const [resultData, setResultData] = useState<ResultData | null>(null);
+  const [assessments, setAssessments] = useState<AssessmentObject[]>([]);
   const [showPrintView, setShowPrintView] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const { view } = useResult();
+  const { uuid } = useParams();
 
-  const sampleResult: StudentResult = {
-    name: 'ALICE JOHNSON',
-    session: '2023/2024',
-    class: 'JSS 2A',
-    term: 'FIRST TERM',
-    position: '3RD',
-    noOfStudents: '45',
-    closingDate: '15TH DECEMBER, 2023',
-    resumptionDate: '8TH JANUARY, 2024',
-    subjects: [
-      {
-        subject: 'ENGLISH LANGUAGE',
-        assignment: 4,
-        assesment: 12,
-        examination: 52,
-        total: 68,
-        grade: 'A',
-        remark: 'EXCELLENT',
-      },
-      {
-        subject: 'MATHEMATICS',
-        assignment: 5,
-        assesment: 14,
-        examination: 55,
-        total: 74,
-        grade: 'A',
-        remark: 'EXCELLENT',
-      },
-      {
-        subject: 'BASIC SCIENCE',
-        assignment: 4,
-        assesment: 11,
-        examination: 48,
-        total: 63,
-        grade: 'B',
-        remark: 'VERY GOOD',
-      },
-      {
-        subject: 'BASIC TECHNOLOGY',
-        assignment: 3,
-        assesment: 13,
-        examination: 45,
-        total: 61,
-        grade: 'B',
-        remark: 'VERY GOOD',
-      },
-      {
-        subject: 'AGRIC TECHNOLOGY',
-        assignment: 4,
-        assesment: 12,
-        examination: 42,
-        total: 58,
-        grade: 'C',
-        remark: 'GOOD',
-      },
-      {
-        subject: 'CIVIC EDUCATION',
-        assignment: 5,
-        assesment: 13,
-        examination: 50,
-        total: 68,
-        grade: 'A',
-        remark: 'EXCELLENT',
-      },
-      {
-        subject: 'COMPUTER SCIENCE',
-        assignment: 4,
-        assesment: 14,
-        examination: 53,
-        total: 71,
-        grade: 'A',
-        remark: 'EXCELLENT',
-      },
-      {
-        subject: 'BUSINESS STUDIES',
-        assignment: 3,
-        assesment: 11,
-        examination: 44,
-        total: 58,
-        grade: 'C',
-        remark: 'VERY GOOD',
-      },
-      {
-        subject: 'SOCIAL STUDIES',
-        assignment: 4,
-        assesment: 12,
-        examination: 46,
-        total: 62,
-        grade: 'B',
-        remark: 'VERY GOOD',
-      },
-      {
-        subject: 'HOME ECONOMICS',
-        assignment: 5,
-        assesment: 13,
-        examination: 41,
-        total: 59,
-        grade: 'C',
-        remark: 'VERY GOOD',
-      },
-      {
-        subject: 'P.H.E',
-        assignment: 4,
-        assesment: 14,
-        examination: 47,
-        total: 65,
-        grade: 'B',
-        remark: 'VERY GOOD',
-      },
-      {
-        subject: 'I.R.K',
-        assignment: 3,
-        assesment: 11,
-        examination: 38,
-        total: 52,
-        grade: 'C',
-        remark: 'GOOD',
-      },
-      {
-        subject: 'QURAN',
-        assignment: 5,
-        assesment: 14,
-        examination: 49,
-        total: 68,
-        grade: 'A',
-        remark: 'EXCELLENT',
-      },
-      {
-        subject: 'HAUSA',
-        assignment: 4,
-        assesment: 12,
-        examination: 43,
-        total: 59,
-        grade: 'C',
-        remark: 'VERY GOOD',
-      },
-    ],
-    affectiveSkills: {
-      punctuality: '4',
-      politeness: '5',
-      neatness: '4',
-      honesty: '5',
-      leadershipSkills: '4',
-      attentiveness: '5',
-      cooperation: '4',
-    },
-    teacherRemark: 'Alice is a brilliant and hardworking student. Keep it up!',
-    principalRemark:
-      'Excellent performance. Continue to maintain this standard.',
+  const fetchData = async () => {
+    try {
+      const response = await view(uuid as string);
+      console.log('Fetched result data:', response);
+      if (response.success) {
+        const result = response.data.result;
+        setResultData(result);
+        setAssessments(result.assessments || []);
+      }
+    } catch (error) {
+      console.error('Error fetching result data:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const totalScores = sampleResult.subjects.reduce(
-    (sum, subject) => sum + subject.total,
+  useEffect(() => {
+    fetchData();
+  }, [uuid, view]);
+
+  if (loading) {
+    return <IsLoading />;
+  }
+
+  if (!resultData) {
+    return (
+      <div className='min-h-screen bg-white p-6'>
+        <p className='text-center text-foreground'>No result data available</p>
+      </div>
+    );
+  }
+
+  const totalScores = assessments.reduce(
+    (sum, subject) => sum + subject.overall,
     0
   );
-  const average = (totalScores / sampleResult.subjects.length).toFixed(1);
-
+  const average = (totalScores / assessments.length).toFixed(1);
   const handlePrint = () => {
     setShowPrintView(true);
     setTimeout(() => {
@@ -206,11 +85,11 @@ export default function TraditionalResultSheet() {
   };
 
   return (
-    <div className='min-h-screen bg-gray-50'>
+    <div className='min-h-screen bg-white'>
       {/* Control Buttons - Hidden in print */}
-      <div className='no-print p-4 mb-3 bg-white border-b'>
+      <div className='no-print p-4 mb-3 bg-white border-b border-gray-300'>
         <div className='max-w-4xl mx-auto flex justify-between items-center'>
-          <h1 className='text-xl font-bold'>Report Sheet</h1>
+          <h1 className='text-xl font-bold text-foreground'>Report Sheet</h1>
           <div className='flex gap-2'>
             <Button onClick={handlePrint} className='gap-2'>
               <Print className='h-4 w-4' />
@@ -234,46 +113,44 @@ export default function TraditionalResultSheet() {
               <div className='info-row'>
                 <div className='info-field'>
                   <span className='label'>NAME:</span>
-                  <span className='underline'>{sampleResult.name}</span>
+                  <span className='underline'>{resultData.student.name}</span>
                 </div>
                 <div className='info-field'>
                   <span className='label'>SESSION:</span>
-                  <span className='underline'>{sampleResult.session}</span>
+                  <span className='underline'> </span>
                 </div>
               </div>
 
               <div className='info-row'>
                 <div className='info-field'>
                   <span className='label'>CLASS:</span>
-                  <span className='underline'>{sampleResult.class}</span>
+                  <span className='underline'> </span>
                 </div>
                 <div className='info-field'>
                   <span className='label'>TERM:</span>
-                  <span className='underline'>{sampleResult.term}</span>
+                  <span className='underline'> </span>
                 </div>
               </div>
 
               <div className='info-row'>
                 <div className='info-field'>
                   <span className='label'>POSITION:</span>
-                  <span className='underline'>{sampleResult.position}</span>
+                  <span className='underline'> </span>
                 </div>
                 <div className='info-field'>
                   <span className='label'>NO. OF STUDENTS:</span>
-                  <span className='underline'>{sampleResult.noOfStudents}</span>
+                  <span className='underline'> </span>
                 </div>
               </div>
 
               <div className='info-row'>
                 <div className='info-field'>
                   <span className='label'>CLOSING DATE:</span>
-                  <span className='underline'>{sampleResult.closingDate}</span>
+                  <span className='underline'> </span>
                 </div>
                 <div className='info-field'>
                   <span className='label'>RESUMPTION DATE:</span>
-                  <span className='underline'>
-                    {sampleResult.resumptionDate}
-                  </span>
+                  <span className='underline'> </span>
                 </div>
               </div>
             </div>
@@ -282,7 +159,7 @@ export default function TraditionalResultSheet() {
             <div className='results-table mb-6'>
               <table className='w-full border-collapse border-2 border-black'>
                 <thead>
-                  <tr className='bg-yellow-100'>
+                  <tr className='bg-gray-200'>
                     <th className='border border-black p-2 text-left font-bold'>
                       SUBJECTS
                     </th>
@@ -307,34 +184,34 @@ export default function TraditionalResultSheet() {
                   </tr>
                 </thead>
                 <tbody>
-                  {sampleResult.subjects.map((subjectData, index) => (
+                  {assessments.map((assesment, index) => (
                     <tr key={index}>
                       <td className='border border-black p-2 font-semibold'>
-                        {subjectData.subject}
+                        {assesment.subject}
                       </td>
                       <td className='border border-black p-1 text-center'>
-                        {subjectData.assignment}
+                        {assesment.assignment}
                       </td>
                       <td className='border border-black p-1 text-center'>
-                        {subjectData.assesment}
+                        {assesment.assesment}
                       </td>
                       <td className='border border-black p-1 text-center'>
-                        {subjectData.examination}
+                        {assesment.examination}
                       </td>
                       <td className='border border-black p-1 text-center font-bold'>
-                        {subjectData.total}
+                        {assesment.overall}
                       </td>
                       <td className='border border-black p-1 text-center font-bold'>
-                        {subjectData.grade}
+                        {' '}
                       </td>
                       <td className='border border-black p-1 text-center text-xs'>
-                        {subjectData.remark}
+                        {' '}
                       </td>
                     </tr>
                   ))}
                   {/* Empty rows */}
                   {Array.from({
-                    length: Math.max(0, 15 - sampleResult.subjects.length),
+                    length: Math.max(0, 15 - assessments.length),
                   }).map((_, index) => (
                     <tr key={`empty-${index}`}>
                       <td className='border border-black p-2'>&nbsp;</td>
@@ -376,43 +253,57 @@ export default function TraditionalResultSheet() {
                         <td className='border border-black p-1 font-semibold'>
                           PUNCTUALITY
                         </td>
-                        <td className='border border-black p-1 text-center w-12'></td>
+                        <td className='border border-black p-1 text-center w-12'>
+                          {' '}
+                        </td>
                       </tr>
                       <tr>
                         <td className='border border-black p-1 font-semibold'>
                           POLITENESS
                         </td>
-                        <td className='border border-black p-1 text-center'></td>
+                        <td className='border border-black p-1 text-center'>
+                          {' '}
+                        </td>
                       </tr>
                       <tr>
                         <td className='border border-black p-1 font-semibold'>
                           NEATNESS
                         </td>
-                        <td className='border border-black p-1 text-center'></td>
+                        <td className='border border-black p-1 text-center'>
+                          {' '}
+                        </td>
                       </tr>
                       <tr>
                         <td className='border border-black p-1 font-semibold'>
                           HONESTY
                         </td>
-                        <td className='border border-black p-1 text-center'></td>
+                        <td className='border border-black p-1 text-center'>
+                          {' '}
+                        </td>
                       </tr>
                       <tr>
                         <td className='border border-black p-1 font-semibold italic'>
                           LEADERSHIP SKILLS
                         </td>
-                        <td className='border border-black p-1 text-center'></td>
+                        <td className='border border-black p-1 text-center'>
+                          {' '}
+                        </td>
                       </tr>
                       <tr>
                         <td className='border border-black p-1 font-semibold italic'>
                           ATTENTIVENESS
                         </td>
-                        <td className='border border-black p-1 text-center'></td>
+                        <td className='border border-black p-1 text-center'>
+                          {' '}
+                        </td>
                       </tr>
                       <tr>
                         <td className='border border-black p-1 font-semibold italic'>
                           COOPERATION
                         </td>
-                        <td className='border border-black p-1 text-center'></td>
+                        <td className='border border-black p-1 text-center'>
+                          {' '}
+                        </td>
                       </tr>
                     </tbody>
                   </table>
@@ -475,7 +366,7 @@ export default function TraditionalResultSheet() {
                 <div className='flex items-center'>
                   <span className='font-bold mr-2'>TEACHER REMARK:</span>
                   <div className='flex-1 border-b border-black'>
-                    {sampleResult.teacherRemark}
+                    {resultData.teacher_remark}
                   </div>
                 </div>
               </div>
@@ -484,7 +375,7 @@ export default function TraditionalResultSheet() {
                 <div className='flex items-center'>
                   <span className='font-bold mr-2'>PRINCIPAL REMARK:</span>
                   <div className='flex-1 border-b border-black'>
-                    {sampleResult.principalRemark}
+                    {resultData.principal_remark}
                   </div>
                 </div>
               </div>
@@ -548,10 +439,6 @@ export default function TraditionalResultSheet() {
 
         .results-table table {
           font-size: 11px;
-        }
-
-        .results-table th {
-          background-color: #fef3c7;
         }
 
         @media print {

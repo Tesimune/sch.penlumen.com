@@ -7,13 +7,14 @@ import { useClass } from '@/hooks/class';
 import { useStudent } from '@/hooks/student';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Download, Search } from 'lucide-react';
+import { Download, Plus, Search } from 'lucide-react';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 
 import { toast } from 'sonner';
 import IsLoading from '@/components/is-loading';
 import StudentsTable from '@/components/students-table';
-import StudentDialog from '@/components/student-dialog';
+import StudentDialog from '@/components/student-create';
+import Link from 'next/link';
 
 interface User {
   uuid: string;
@@ -46,7 +47,6 @@ export default function StudentsPage() {
   const { index: userIndex } = useUser();
   const { index: classIndex } = useClass();
   const { index: studentIndex, create, update, remove } = useStudent();
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [students, setStudents] = useState<Student[]>([]);
@@ -117,7 +117,6 @@ export default function StudentsPage() {
       }
       if (response.success) {
         fetchData();
-        setIsAddDialogOpen(false);
         setFormData({
           name: '',
           avatar: '',
@@ -140,8 +139,6 @@ export default function StudentsPage() {
   };
 
   const handleEdit = (student: Student) => {
-    setIsAddDialogOpen(false);
-
     setEditUUID(student.uuid);
     setFormData({
       name: student.name,
@@ -152,9 +149,7 @@ export default function StudentsPage() {
     });
 
     // Small delay to prevent dialog conflicts
-    setTimeout(() => {
-      setIsAddDialogOpen(true);
-    }, 10);
+    setTimeout(() => {}, 10);
   };
 
   const handleDelete = async (student: Student) => {
@@ -185,7 +180,6 @@ export default function StudentsPage() {
       parent_uuid: '',
     });
     setEditUUID(null);
-    setIsAddDialogOpen(false);
   };
 
   if (isLoading) {
@@ -202,24 +196,12 @@ export default function StudentsPage() {
           </p>
         </div>
         <div className='flex items-center gap-2'>
-          <Button variant='outline' size='sm'>
-            <Download className='mr-2 h-4 w-4' />
-            Export
-          </Button>
-          <StudentDialog
-            isAddDialogOpen={isAddDialogOpen}
-            setIsAddDialogOpen={setIsAddDialogOpen}
-            formData={formData}
-            setFormData={setFormData}
-            handleSubmit={handleSubmit}
-            handleReset={handleReset}
-            editUUID={editUUID}
-            setEditUUID={setEditUUID}
-            parents={parents}
-            classes={classes}
-            handleAvatarChange={handleAvatarChange}
-            removeAvatar={removeAvatar}
-          />
+          <Link href='/staff/students/create'>
+            <Button size='sm' className='flex items-center rounded-none'>
+              <Plus className='h-4 w-4' />
+              <span>Add New</span>
+            </Button>
+          </Link>
         </div>
       </div>
 
@@ -228,7 +210,7 @@ export default function StudentsPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <Card>
+        <Card className='shadow-none rounded-none'>
           <CardHeader className='flex flex-col gap-4 sm:flex-row sm:items-center'>
             <div className='relative w-full'>
               <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground' />
@@ -241,11 +223,7 @@ export default function StudentsPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <StudentsTable
-              filteredStudents={filteredStudents}
-              handleEdit={handleEdit}
-              handleDelete={handleDelete}
-            />
+            <StudentsTable filteredStudents={filteredStudents} />
           </CardContent>
         </Card>
       </motion.div>

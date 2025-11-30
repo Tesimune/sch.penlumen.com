@@ -1,10 +1,10 @@
 import React from 'react';
-import StudentUpdate from '@/components/student-update';
+import UserUpdatePage from '@/components/user-update';
 
 export default function page() {
   return (
     <div>
-      <StudentUpdate />
+      <UserUpdatePage role='parent' />
     </div>
   );
 }

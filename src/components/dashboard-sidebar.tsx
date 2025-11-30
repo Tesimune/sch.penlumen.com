@@ -1,5 +1,7 @@
 'use client';
 
+import type React from 'react';
+
 import Link from 'next/link';
 import Cookies from 'js-cookie';
 import { useEffect, useState } from 'react';
@@ -16,6 +18,7 @@ import {
   Settings,
   Users,
   User,
+  ChevronDown,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -53,6 +56,7 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [profile, setProfile] = useState<UserProfile>();
   const [menuItems, setMenuItems] = useState<any[]>([]);
+  const [mounted, setMounted] = useState(false);
 
   const terminateSession = () => {
     Cookies.remove('branch');
@@ -68,8 +72,8 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
 
   const staffMenuItems = [
     { title: 'Dashboard', icon: LayoutDashboard, href: '/staff/dashboard' },
-    { title: 'parents', icon: Users, href: '/staff/parents' },
-    { title: 'Staffs', icon: GraduationCap, href: '/staff/staffs' },
+    { title: 'Parents', icon: Users, href: '/staff/parents' },
+    { title: 'Staff', icon: GraduationCap, href: '/staff/staffs' },
     { title: 'Classes', icon: BookOpen, href: '/staff/classes' },
     { title: 'Students', icon: Users, href: '/staff/students' },
     { title: 'Settings', icon: Settings, href: '/staff/settings' },
@@ -83,6 +87,8 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
   ];
 
   useEffect(() => {
+    setMounted(true);
+
     const userString = Cookies.get('user');
     const user = userString ? JSON.parse(userString) : null;
     if (user) {
@@ -102,89 +108,118 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
 
   const APP_NAME = process.env.NEXT_PUBLIC_APP_SLUG_NAME || 'School';
 
+  if (!mounted) {
+    return null;
+  }
+
   return (
     <SidebarProvider>
-      <div className='flex min-h-screen w-full'>
-        <Sidebar>
-          <SidebarHeader>
-            <div className='flex items-center gap-2 px-4 py-2'>
+      <div className='flex min-h-screen w-full bg-background'>
+        {/* Sidebar */}
+        <Sidebar className='border-r border-border'>
+          <SidebarHeader className='border-b border-border p-0 h-16'>
+            <div className='flex items-center gap-3 px-6 py-4'>
               <School className='h-6 w-6' />
-              <span className='text-xl font-bold'>{APP_NAME}</span>
+              <span className='text-lg font-bold'>{APP_NAME}</span>
             </div>
           </SidebarHeader>
+
           <SidebarContent>
-            <SidebarGroup>
-              <SidebarGroupLabel>Main Menu</SidebarGroupLabel>
+            <SidebarGroup className='py-4 px-0'>
+              <SidebarGroupLabel className='px-6 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider'>
+                Main Menu
+              </SidebarGroupLabel>
               <SidebarGroupContent>
-                <SidebarMenu>
-                  {menuItems.map((item) => (
-                    <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={pathname === item.href}
-                        tooltip={item.title}
-                      >
-                        <Link href={item.href}>
-                          <item.icon className='h-5 w-5' />
-                          <span>{item.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
+                <SidebarMenu className='gap-0'>
+                  {menuItems.map((item) => {
+                    const isActive =
+                      pathname.split('/').slice(0, 3).join('/') ===
+                      item.href.split('/').slice(0, 3).join('/');
+
+                    return (
+                      <SidebarMenuItem key={item.title}>
+                        <SidebarMenuButton
+                          asChild
+                          className={`px-0 mx-0 border-l-4 transition-colors rounded-none ${
+                            isActive
+                              ? 'border-l-primary bg-sidebar-accent'
+                              : 'border-l-transparent hover:bg-sidebar-accent'
+                          }`}
+                        >
+                          <Link href={item.href} className='px-6 py-3'>
+                            <item.icon className='h-5 w-5 flex-shrink-0' />
+                            <span className='font-light text-sm'>
+                              {item.title}
+                            </span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
           </SidebarContent>
-          <SidebarFooter>
-            <div className='px-3 py-2'>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant='ghost' className='w-full justify-start px-2'>
-                    <Avatar className='h-8 w-8 mr-2'>
-                      <AvatarImage src={profile?.avatar || ''} alt='User' />
-                      <AvatarFallback>
-                        {profile?.name?.charAt(0).toUpperCase() || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className='flex flex-col items-start text-sm'>
-                      <span>{profile?.name || 'Unknow'}</span>
-                      <span className='text-xs text-muted-foreground'>
-                        {profile?.role || 'ADMIN'}
-                      </span>
-                    </div>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align='end' className='w-56'>
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    <User className='mr-2 h-4 w-4' />
-                    <span>Profile</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => logoutAccount()}>
-                    <LogOut className='mr-2 h-4 w-4' />
-                    <span>Log out</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </SidebarFooter>
-        </Sidebar>
-        <div className='flex-1 w-full'>
-          <div className='flex h-16 items-center gap-4 border-b bg-background px-6'>
-            <SidebarTrigger />
-            <div className='ml-auto flex items-center gap-4'>
+
+          <SidebarFooter className='border-t border-border p-0'>
+            <div className='px-4 py-3'>
               <Button
-                onClick={() => terminateSession()}
+                onClick={terminateSession}
                 variant='outline'
                 size='sm'
+                className='w-full border-border text-foreground hover:bg-muted bg-transparent rounded-none'
               >
                 Switch Branch
               </Button>
             </div>
-          </div>
-          <main className='flex-1 w-full p-6'>{children}</main>
+          </SidebarFooter>
+        </Sidebar>
+
+        {/* Main Content */}
+        <div className='flex-1 flex flex-col w-full'>
+          <header className='flex h-16 items-center justify-between gap-4 border-b border-border bg-card px-6'>
+            <SidebarTrigger className='text-foreground outline-0' />
+
+            {/* Account Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className='flex items-center outline-0 p-1'>
+                  <div className='flex items-center gap-3'>
+                    <Avatar className='h-8 w-8'>
+                      <AvatarImage src={profile?.avatar || ''} alt='User' />
+                      <AvatarFallback className='bg-primary text-primary-foreground text-xs font-bold'>
+                        {profile?.name?.charAt(0).toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className='flex flex-col items-start text-sm'>
+                      <span className='font-semibold'>
+                        {profile?.name || 'Unknown'}
+                      </span>
+                    </div>
+                  </div>
+                  <ChevronDown className='h-4 w-4 opacity-50 ml-2' />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align='end' className='w-56'>
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className='cursor-pointer'>
+                  <User className='mr-2 h-4 w-4' />
+                  <span>Profile</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={logoutAccount}
+                  className='text-destructive cursor-pointer'
+                >
+                  <LogOut className='mr-2 h-4 w-4' />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </header>
+
+          <main className='flex-1 w-full p-6 overflow-y-auto'>{children}</main>
         </div>
       </div>
     </SidebarProvider>

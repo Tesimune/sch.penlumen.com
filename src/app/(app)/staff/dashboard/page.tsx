@@ -63,83 +63,66 @@ export default function DashboardPage() {
 
   return (
     <div className='grid w-full space-y-6'>
-      <Tabs defaultValue='overview' className='space-y-4'>
-        <TabsList>
-          <TabsTrigger value='overview'>Overview</TabsTrigger>
-          <TabsTrigger value='analytics'>Analytics</TabsTrigger>
-          <TabsTrigger value='reports'>Reports</TabsTrigger>
-        </TabsList>
-        <TabsContent value='overview' className='space-y-4'>
-          <motion.div
-            className='grid gap-4 md:grid-cols-2 xl:grid-cols-4'
-            variants={container}
-            initial='hidden'
-            animate='show'
-          >
-            <motion.div variants={item}>
-              <Card>
-                <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                  <CardTitle className='text-sm font-medium'>
-                    Total Parents
-                  </CardTitle>
-                  <Users className='h-4 w-4 text-muted-foreground' />
-                </CardHeader>
-                <CardContent>
-                  <div className='text-2xl font-bold'>{card.total_parents}</div>
-                </CardContent>
-              </Card>
-            </motion.div>
-            <motion.div variants={item}>
-              <Card>
-                <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                  <CardTitle className='text-sm font-medium'>
-                    Total Staffs
-                  </CardTitle>
-                  <Users className='h-4 w-4 text-muted-foreground' />
-                </CardHeader>
-                <CardContent>
-                  <div className='text-2xl font-bold'>{card.total_staffs}</div>
-                </CardContent>
-              </Card>
-            </motion.div>
-            <motion.div variants={item}>
-              <Card>
-                <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                  <CardTitle className='text-sm font-medium'>
-                    Total Classes
-                  </CardTitle>
-                  <BookOpen className='h-4 w-4 text-muted-foreground' />
-                </CardHeader>
-                <CardContent>
-                  <div className='text-2xl font-bold'>{card.total_classes}</div>
-                </CardContent>
-              </Card>
-            </motion.div>
-            <motion.div variants={item}>
-              <Card>
-                <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                  <CardTitle className='text-sm font-medium'>
-                    Total Students
-                  </CardTitle>
-                  <GraduationCap className='h-4 w-4 text-muted-foreground' />
-                </CardHeader>
-                <CardContent>
-                  <div className='text-2xl font-bold'>
-                    {card.total_students}
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </motion.div>
-          <div>{/* <Overview /> */}</div>
-        </TabsContent>
-        <TabsContent value='analytics' className='space-y-4'>
-          <Analytics />
-        </TabsContent>
-        <TabsContent value='reports' className='space-y-4'>
-          <Reports />
-        </TabsContent>
-      </Tabs>
+      <motion.div
+        className='grid gap-4 md:grid-cols-2 xl:grid-cols-4'
+        variants={container}
+        initial='hidden'
+        animate='show'
+      >
+        <motion.div variants={item}>
+          <Card className='shadow-none rounded-none'>
+            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+              <CardTitle className='text-sm font-medium'>
+                Total Parents
+              </CardTitle>
+              <Users className='h-4 w-4 text-muted-foreground' />
+            </CardHeader>
+            <CardContent>
+              <div className='text-2xl font-bold'>{card.total_parents}</div>
+            </CardContent>
+          </Card>
+        </motion.div>
+        <motion.div variants={item}>
+          <Card className='shadow-none rounded-none'>
+            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+              <CardTitle className='text-sm font-medium'>
+                Total Staffs
+              </CardTitle>
+              <Users className='h-4 w-4 text-muted-foreground' />
+            </CardHeader>
+            <CardContent>
+              <div className='text-2xl font-bold'>{card.total_staffs}</div>
+            </CardContent>
+          </Card>
+        </motion.div>
+        <motion.div variants={item}>
+          <Card className='shadow-none rounded-none'>
+            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+              <CardTitle className='text-sm font-medium'>
+                Total Classes
+              </CardTitle>
+              <BookOpen className='h-4 w-4 text-muted-foreground' />
+            </CardHeader>
+            <CardContent>
+              <div className='text-2xl font-bold'>{card.total_classes}</div>
+            </CardContent>
+          </Card>
+        </motion.div>
+        <motion.div variants={item}>
+          <Card className='shadow-none rounded-none'>
+            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+              <CardTitle className='text-sm font-medium'>
+                Total Students
+              </CardTitle>
+              <GraduationCap className='h-4 w-4 text-muted-foreground' />
+            </CardHeader>
+            <CardContent>
+              <div className='text-2xl font-bold'>{card.total_students}</div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </motion.div>
+      <div>{/* <Overview /> */}</div>
     </div>
   );
 }

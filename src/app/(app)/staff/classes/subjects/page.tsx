@@ -1,10 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
-import { Pen, Plus, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Pen, Plus, Search } from 'lucide-react';
 
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -12,54 +12,40 @@ import { Card, CardHeader, CardContent } from '@/components/ui/card';
 
 import { toast } from 'sonner';
 import IsLoading from '@/components/is-loading';
-import StudentsTable from '@/components/students-table';
+import SubjectsTable from '@/components/subjects-table';
 
 import { useClass } from '@/hooks/class';
 import { useSubject } from '@/hooks/subject';
-
-interface User {
-  uuid: string;
-  name: string;
-  email: string;
-}
-
-interface Parent {
-  user: User;
-}
 
 interface Class {
   uuid: string;
   name: string;
 }
 
-interface Student {
+interface Subject {
   uuid: string;
   name: string;
-  status: string;
-  parent: Parent;
-  class: Class;
-  reg_number: string;
-  avatar: string;
   class_uuid: string;
-  parent_uuid: string;
 }
 
 export default function StudentsPage() {
-  const { uuid } = useParams();
-
   const { show: classShow } = useClass();
   const { index: subjectIndex } = useSubject();
+
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const uuid = searchParams.get('class');
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [classes, setClasses] = useState<Class[]>([]);
-  const [students, setStudents] = useState<Student[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
 
   const fetchData = async () => {
     setIsLoading(true);
     try {
       const resClass = await classShow(uuid as string);
-      const resSubject = await subjectIndex('subject');
+      const resSubject = await subjectIndex(uuid as string);
 
       if (resClass.success && resSubject.success) {
         setClasses([
@@ -69,7 +55,7 @@ export default function StudentsPage() {
             name: resClass.data.class.name,
           },
         ]);
-        setStudents(resClass.data.class.students);
+        setSubjects(resSubject.data.subjects);
       } else {
         toast(resClass.message || 'Something went wrong');
         toast(resSubject.message || 'Something went wrong');
@@ -82,11 +68,14 @@ export default function StudentsPage() {
   };
 
   useEffect(() => {
+    if (!uuid) {
+      router.back();
+    }
     fetchData();
-  }, []);
+  }, [uuid, router]);
 
-  const filteredStudents = students.filter((student) =>
-    student.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredSubjects = subjects.filter((subject) =>
+    subject.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   if (isLoading) {
@@ -101,7 +90,7 @@ export default function StudentsPage() {
             {classes[0]?.name}
           </h1>
           <p className='text-muted-foreground'>
-            Manage student records and information
+            Manage subjects records and information
           </p>
         </div>
         <div className='flex items-center gap-2'>
@@ -113,7 +102,7 @@ export default function StudentsPage() {
             <Pen className='mr-1 h-4 w-4' />
             Edit class
           </Button>
-          <Link href='/staff/students/create'>
+          <Link href={`/staff/classes/subjects/create?class=${uuid}`}>
             <Button size='sm' className='flex items-center rounded-none'>
               <Plus className='h-4 w-4' />
               <span>Add New</span>
@@ -132,7 +121,7 @@ export default function StudentsPage() {
             <div className='relative w-full'>
               <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground' />
               <Input
-                placeholder='Search students...'
+                placeholder='Search subjects...'
                 className='pl-8'
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -141,7 +130,10 @@ export default function StudentsPage() {
           </CardHeader>
 
           <CardContent>
-            <StudentsTable filteredStudents={filteredStudents} />
+            <SubjectsTable
+              fetchData={fetchData}
+              filteredSubjects={filteredSubjects}
+            />
           </CardContent>
         </Card>
       </motion.div>
