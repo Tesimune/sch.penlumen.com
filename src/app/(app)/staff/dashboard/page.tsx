@@ -1,12 +1,8 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import Reports from '@/components/dashboard/reports';
-import Analytics from '@/components/dashboard/analytics';
-// import Overview from '@/components/dashboard/overview';
 import { BookOpen, GraduationCap, Users } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useEffect, useState } from 'react';
 import IsLoading from '@/components/is-loading';
 import { useApp } from '@/hooks/app';
