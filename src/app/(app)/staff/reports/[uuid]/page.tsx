@@ -51,7 +51,7 @@ type AssessmentObject = {
   overall: number;
 };
 
-export default function page() {
+export default function ReportPage() {
   const { uuid } = useParams();
   const { view, update } = useResult();
 

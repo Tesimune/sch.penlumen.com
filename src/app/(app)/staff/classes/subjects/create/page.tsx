@@ -16,7 +16,7 @@ interface Class {
   name: string;
 }
 
-export default function page() {
+export default function CreateSubject() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const uuid = searchParams.get('class');
