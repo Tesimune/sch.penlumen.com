@@ -116,7 +116,7 @@ export default function StudentsPage() {
           <Link href='/staff/students/create'>
             <Button size='sm' className='flex items-center rounded-none'>
               <Plus className='h-4 w-4' />
-              <span>Add New</span>
+              <span>Add Student</span>
             </Button>
           </Link>
         </div>
