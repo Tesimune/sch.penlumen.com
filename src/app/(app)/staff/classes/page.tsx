@@ -177,7 +177,7 @@ export default function ClassesPage() {
           <Link href='/staff/classes/create'>
             <Button size='sm' className='flex items-center rounded-none'>
               <Plus className='h-4 w-4' />
-              <span>Add New</span>
+              <span>Add Class</span>
             </Button>
           </Link>
         </div>

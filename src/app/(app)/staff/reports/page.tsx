@@ -94,7 +94,7 @@ export default function ReportsPage() {
 
   useEffect(() => {
     fetchedReports();
-  }, []);
+  }, [statusFilter]);
 
   const filteredReports = reports.filter((report) => {
     const matchesSearch =
