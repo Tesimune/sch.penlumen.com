@@ -14,7 +14,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useClass } from '@/hooks/class';
 import { useUser } from '@/hooks/user';
 import { useParams } from 'next/navigation';
-import IsLoading from './is-loading';
+import LoadingPage from '../loading-page';
 import { useStudent } from '@/hooks/student';
 import { toast } from 'sonner';
 
@@ -122,7 +122,7 @@ export default function StudentUpdate() {
   };
 
   if (isLoading) {
-    return <IsLoading />;
+    return <LoadingPage />;
   }
 
   return (

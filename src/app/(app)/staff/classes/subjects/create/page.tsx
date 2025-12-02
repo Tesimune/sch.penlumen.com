@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import IsLoading from '@/components/is-loading';
+import LoadingPage from '@/components/loading-page';
 
 import { useClass } from '@/hooks/class';
 import { useSubject } from '@/hooks/subject';
@@ -65,7 +65,7 @@ export default function CreateSubject() {
     }
   };
   if (isLoading) {
-    return <IsLoading />;
+    return <LoadingPage />;
   }
 
   return (

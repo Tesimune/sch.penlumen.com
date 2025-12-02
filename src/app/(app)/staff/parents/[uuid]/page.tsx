@@ -1,5 +1,5 @@
 import React from 'react';
-import UserUpdatePage from '@/components/user-update';
+import UserUpdatePage from '@/components/app/user-update';
 
 export default function page() {
   return (

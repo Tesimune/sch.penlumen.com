@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import {useParams, useRouter, useSearchParams} from 'next/navigation';
 import { Pen, Plus, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -11,8 +11,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 
 import { toast } from 'sonner';
-import IsLoading from '@/components/is-loading';
-import StudentsTable from '@/components/students-table';
+import LoadingPage from '@/components/loading-page';
+import StudentsTable from '@/components/app/students-table';
 
 import { useClass } from '@/hooks/class';
 import { useSubject } from '@/hooks/subject';
@@ -45,7 +45,9 @@ interface Student {
 }
 
 export default function StudentsPage() {
-  const { uuid } = useParams();
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const uuid = searchParams.get('class');
 
   const { show: classShow } = useClass();
   const { index: subjectIndex } = useSubject();
@@ -90,7 +92,7 @@ export default function StudentsPage() {
   );
 
   if (isLoading) {
-    return <IsLoading />;
+    return <LoadingPage />;
   }
 
   return (

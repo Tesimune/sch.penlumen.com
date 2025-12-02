@@ -1,5 +1,5 @@
 import React from 'react';
-import UserCreatePage from '@/components/user-create';
+import UserCreatePage from '@/components/app/user-create';
 
 export default function page() {
   return (

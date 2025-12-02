@@ -17,10 +17,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Button } from './ui/button';
+import { Button } from '../ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent } from './ui/card';
+import { Card, CardContent } from '../ui/card';
 import { Plus } from 'lucide-react';
 
 interface Class {

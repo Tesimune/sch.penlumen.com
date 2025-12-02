@@ -33,7 +33,7 @@ interface Teacher {
   user: User;
 }
 
-const ClassCreate = () => {
+const ClassUpdate = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [formData, setFormData] = useState<Class>({
@@ -173,4 +173,4 @@ const ClassCreate = () => {
   );
 };
 
-export default ClassCreate;
+export default ClassUpdate;

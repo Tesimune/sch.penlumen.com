@@ -11,8 +11,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 
 import { toast } from 'sonner';
-import IsLoading from '@/components/is-loading';
-import SubjectsTable from '@/components/subjects-table';
+import LoadingPage from '@/components/loading-page';
+import SubjectsTable from '@/components/app/subjects-table';
 
 import { useClass } from '@/hooks/class';
 import { useSubject } from '@/hooks/subject';
@@ -79,7 +79,7 @@ export default function StudentsPage() {
   );
 
   if (isLoading) {
-    return <IsLoading />;
+    return <LoadingPage />;
   }
 
   return (

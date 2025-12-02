@@ -1,5 +1,5 @@
 import React from 'react';
-import StudentUpdate from '@/components/student-update';
+import StudentUpdate from '@/components/app/student-update';
 
 export default function page() {
   return (

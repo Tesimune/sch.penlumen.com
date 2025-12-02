@@ -20,7 +20,7 @@ import {
 import Link from 'next/link';
 import { useResult } from '@/hooks/result';
 import { useParams } from 'next/navigation';
-import IsLoading from '@/components/is-loading';
+import LoadingPage from '@/components/loading-page';
 
 interface StudentData {
   uuid: string;
@@ -161,7 +161,7 @@ export default function ReportPage() {
   };
 
   if (isLoading || !report) {
-    return <IsLoading />;
+    return <LoadingPage />;
   }
 
   return (
