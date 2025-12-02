@@ -10,8 +10,8 @@ import { Download, Plus, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { toast } from 'sonner';
-import IsLoading from '@/components/is-loading';
-import ClassesTable from '@/components/classes-table';
+import LoadingPage from '@/components/loading-page';
+import ClassesTable from '@/components/app/classes-table';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
@@ -161,7 +161,7 @@ export default function ClassesPage() {
   };
 
   if (isLoading) {
-    return <IsLoading />;
+    return <LoadingPage />;
   }
 
   return (

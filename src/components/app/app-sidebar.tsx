@@ -1,5 +1,4 @@
 'use client';
-
 import type React from 'react';
 
 import Link from 'next/link';
@@ -51,7 +50,7 @@ interface UserProfile {
   role: string;
 }
 
-export function DashboardSidebar({ children }: { children: React.ReactNode }) {
+export function AppSidebar({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [profile, setProfile] = useState<UserProfile>();

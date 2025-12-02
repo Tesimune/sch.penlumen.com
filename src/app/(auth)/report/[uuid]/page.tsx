@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Printer as Print } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import IsLoading from '@/components/is-loading';
+import LoadingPage from '@/components/loading-page';
 
 import { useResult } from '@/hooks/result';
 import { useParams } from 'next/navigation';
@@ -60,7 +60,7 @@ export default function TraditionalResultSheet() {
   }, [uuid, view]);
 
   if (loading) {
-    return <IsLoading />;
+    return <LoadingPage />;
   }
 
   if (!resultData) {

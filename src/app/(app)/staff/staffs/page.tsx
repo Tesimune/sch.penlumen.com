@@ -4,9 +4,9 @@ import { toast } from 'sonner';
 import { useUser } from '@/hooks/user';
 import { Download, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import UserCreate from '@/components/user-create';
-import UsersIndex from '@/components/users-table';
-import IsLoading from '@/components/is-loading';
+import UserCreate from '@/components/app/user-create';
+import UsersIndex from '@/components/app/users-table';
+import LoadingPage from '@/components/loading-page';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
@@ -53,7 +53,7 @@ export default function StaffPage() {
   }, []);
 
   if (isLoading) {
-    return <IsLoading />;
+    return <LoadingPage />;
   }
 
   return (

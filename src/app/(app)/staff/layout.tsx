@@ -2,7 +2,7 @@
 import type React from 'react';
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
-import { DashboardSidebar } from '@/components/dashboard-sidebar';
+import { AppSidebar } from '@/components/app/app-sidebar';
 
 export default function DashboardLayout({
   children,
@@ -15,5 +15,5 @@ export default function DashboardLayout({
   if (user?.role == 'PARENT') {
     router.push('/parent/dashboard');
   }
-  return <DashboardSidebar>{children}</DashboardSidebar>;
+  return <AppSidebar>{children}</AppSidebar>;
 }

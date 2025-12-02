@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { BookOpen, GraduationCap, Users } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useEffect, useState } from 'react';
-import IsLoading from '@/components/is-loading';
+import LoadingPage from '@/components/loading-page';
 import { useApp } from '@/hooks/app';
 import { toast } from 'sonner';
 
@@ -54,7 +54,7 @@ export default function DashboardPage() {
   };
 
   if (isLoading) {
-    return <IsLoading />;
+    return <LoadingPage />;
   }
 
   return (

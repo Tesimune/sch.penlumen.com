@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import IsLoading from './is-loading';
+import LoadingPage from '../loading-page';
 
 type UserData = {
   name: string;
@@ -98,7 +98,7 @@ export default function UserUpdatePage({ role }: { role: string }) {
   };
 
   if (isLoading) {
-    return <IsLoading />;
+    return <LoadingPage />;
   }
 
   return (

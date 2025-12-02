@@ -11,9 +11,9 @@ import { Download, Plus, Search } from 'lucide-react';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 
 import { toast } from 'sonner';
-import IsLoading from '@/components/is-loading';
-import StudentsTable from '@/components/students-table';
-import StudentDialog from '@/components/student-create';
+import LoadingPage from '@/components/loading-page';
+import StudentsTable from '@/components/app/students-table';
+import StudentDialog from '@/components/app/student-create';
 import Link from 'next/link';
 
 interface User {
@@ -183,7 +183,7 @@ export default function StudentsPage() {
   };
 
   if (isLoading) {
-    return <IsLoading />;
+    return <LoadingPage />;
   }
 
   return (

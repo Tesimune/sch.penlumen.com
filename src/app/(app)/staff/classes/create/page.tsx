@@ -1,4 +1,4 @@
-import ClassCreate from '@/components/class-create';
+import ClassCreate from '@/components/app/class-create';
 import React from 'react';
 
 export default function page() {

@@ -32,7 +32,7 @@ import {
   Edit,
   Trash,
 } from 'lucide-react';
-import IsLoading from '@/components/is-loading';
+import LoadingPage from '@/components/loading-page';
 import { toast } from 'sonner';
 
 interface BranchAccess {
@@ -202,7 +202,7 @@ export default function BranchSelectionPage() {
   const APP_NAME = process.env.NEXT_PUBLIC_APP_SLUG_NAME || 'School';
 
   if (isLoading) {
-    return <IsLoading />;
+    return <LoadingPage />;
   }
 
   return (

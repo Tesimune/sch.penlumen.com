@@ -32,7 +32,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Textarea } from '@/components/ui/textarea';
-import IsLoading from '@/components/is-loading';
+import LoadingPage from '@/components/loading-page';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useGrade } from '@/hooks/grade';
@@ -181,7 +181,7 @@ export default function GradesPage() {
   };
 
   if (isLoading) {
-    return <IsLoading />;
+    return <LoadingPage />;
   }
 
   return (
@@ -198,7 +198,7 @@ export default function GradesPage() {
             <DialogTrigger onClick={handleReset} asChild>
               <Button size='sm' className='flex items-center rounded-none'>
                 <Plus className='h-4 w-4' />
-                <span>Add New</span>
+                <span>Add Grade</span>
               </Button>
             </DialogTrigger>
             <DialogContent>
