@@ -1,6 +1,7 @@
 'use client';
 
 import {useState} from "react"
+import Link from "next/link";
 import {Award, BookOpen, Calendar, MapPin, Trophy, Users} from "lucide-react"
 
 interface  Feature {
@@ -77,18 +78,18 @@ export default function LandingPage() {
                     development
                 </p>
                 <div className="flex gap-4 justify-center pt-8">
-                    <a
+                    <Link
                         href="/#about"
                         className="bg-primary text-primary-foreground px-8 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors"
                     >
                         Learn More
-                    </a>
-                    <a
+                    </Link>
+                    <Link
                         href="/#contact"
                         className="border-2 border-primary text-primary px-8 py-3 rounded-lg font-medium hover:bg-primary/10 transition-colors"
                     >
                         Get in Touch
-                    </a>
+                    </Link>
                 </div>
             </div>
         </section>
@@ -287,12 +288,12 @@ export default function LandingPage() {
                 <p className="text-lg text-primary-foreground/90">
                     Become part of our community of achievers and discover your potential
                 </p>
-                <a
-                    href="/contact"
+                <Link
+                    href="/#"
                     className="inline-block bg-white text-primary px-8 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors"
                 >
                     Contact Us Today
-                </a>
+                </Link>
             </div>
         </section>
 
