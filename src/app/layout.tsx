@@ -13,11 +13,29 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
-const APP_META = process.env.NEXT_PUBLIC_APP_FULL_NAME || 'School - Penlum';
+const APP_NAME = process.env.NEXT_PUBLIC_APP_FULL_NAME || 'School';
+const APP_LOGO = process.env.NEXT_PUBLIC_APP_LOGO || '/placeholder.svg';
 
 export const metadata: Metadata = {
-  title: APP_META,
-  description: APP_META,
+  title: APP_NAME,
+    description: `Welcome to ${APP_NAME} - Inspiring Excellence in Education`,
+    icons: {
+        icon: [
+            {
+                url: APP_LOGO,
+                media: "(prefers-color-scheme: light)",
+            },
+            {
+                url: APP_LOGO,
+                media: "(prefers-color-scheme: dark)",
+            },
+            {
+                url: "/icon.svg",
+                type: "image/svg+xml",
+            },
+        ],
+        apple: APP_LOGO,
+    },
 };
 
 export default function RootLayout({
