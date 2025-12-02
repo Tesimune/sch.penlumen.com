@@ -6,9 +6,9 @@ import {Mail, MapPin, Menu, Phone, X} from "lucide-react"
 
 const APP_NAME = process.env.NEXT_PUBLIC_APP_FULL_NAME || 'School';
 const APP_LOGO = process.env.NEXT_PUBLIC_APP_LOGO || '/placeholder.svg';
-const APP_PHONE = process.env.NEXT_PUBLIC_APP_PHONE || 'School';
-const APP_EMAIL = process.env.NEXT_PUBLIC_APP_EMAIL || 'School';
 const APP_ADDRESS = process.env.NEXT_PUBLIC_APP_ADDRESS || 'School';
+const APP_EMAIL = process.env.NEXT_PUBLIC_APP_EMAIL || 'School';
+const APP_PHONE = process.env.NEXT_PUBLIC_APP_PHONE || 'School';
 
 export function Navigation() {
     const [isOpen, setIsOpen] = useState(false)
@@ -28,8 +28,7 @@ export function Navigation() {
                                 className="w-full h-full object-contain"
                             />
                         </div>
-                        <span
-                            className="hidden md:inline text-lg font-bold text-primary">{APP_NAME}</span>
+                        <span className="hidden md:inline text-lg font-bold text-primary">{APP_NAME}</span>
                     </Link>
 
                     {/* Desktop Menu */}
