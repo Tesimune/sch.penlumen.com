@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 const APP_NAME = process.env.NEXT_PUBLIC_APP_FULL_NAME || 'School';
 const APP_LOGO = process.env.NEXT_PUBLIC_APP_LOGO || '/placeholder.svg';
-const THEME_CSS = process.env.NEXT_PUBLIC_THEME_CSS_URL || '/css/default.css';
+const THEME_CSS = process.env.NEXT_PUBLIC_THEME_CSS_URL as string || '/css/default.css';
 
 export const metadata: Metadata = {
     title: APP_NAME,
@@ -38,7 +38,7 @@ export default function RootLayout({children}: { children: React.ReactNode }) {
             <link rel="stylesheet" href={THEME_CSS}/>
         </head>
 
-        <body className={`dark theme-external ${geistSans.variable} ${geistMono.variable}`}>
+        <body className={`theme-external ${geistSans.variable} ${geistMono.variable}`}>
         <main>{children}</main>
         <Toaster/>
         </body>
