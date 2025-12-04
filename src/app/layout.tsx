@@ -32,14 +32,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({children}: { children: React.ReactNode }) {
     return (
-        <html lang="en">
+        <html lang="en" suppressHydrationWarning>
         <head>
-            {/* External theme CSS */}
-            <link rel="preload" href={THEME_CSS} as="style" />
-            <link rel="stylesheet" href={THEME_CSS} />
-            <title>{APP_NAME}</title>
+            {/* External theme must load AFTER globals */}
+            <link rel="stylesheet" href={THEME_CSS}/>
         </head>
-        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+
+        <body className={`dark theme-external ${geistSans.variable} ${geistMono.variable}`}>
         <main>{children}</main>
         <Toaster/>
         </body>
