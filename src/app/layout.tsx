@@ -35,11 +35,8 @@ export default function RootLayout({children}: { children: React.ReactNode }) {
         <html lang="en">
         <head>
             {/* External theme CSS */}
-            <link
-                rel="stylesheet"
-                href={THEME_CSS}
-                key="theme-css"
-            />
+            <link rel="preload" href={THEME_CSS} as="style" />
+            <link rel="stylesheet" href={THEME_CSS} />
             <title>{APP_NAME}</title>
         </head>
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
