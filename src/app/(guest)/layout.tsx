@@ -1,12 +1,10 @@
 import type React from 'react';
-import {Footer, Navigation} from "@/components/guest/guest-layout";
+import GuestNavFooter from "@/components/guest/guest-nav-footer";
 
 export default function GuestLayout({children}: { children: React.ReactNode; }) {
     return (
-        <>
-            <Navigation/>
+        <GuestNavFooter>
             {children}
-            <Footer/>.
-        </>
+        </GuestNavFooter>
     );
 }

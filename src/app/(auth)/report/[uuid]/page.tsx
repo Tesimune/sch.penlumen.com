@@ -19,7 +19,7 @@ interface StudentData {
 interface AssessmentObject {
   subject: string;
   assignment: number;
-  assesment: number;
+  assessment: number;
   examination: number;
   overall: number;
 }
@@ -184,22 +184,22 @@ export default function TraditionalResultSheet() {
                   </tr>
                 </thead>
                 <tbody>
-                  {assessments.map((assesment, index) => (
+                  {assessments.map((assessment, index) => (
                     <tr key={index}>
                       <td className='border border-black p-2 font-semibold'>
-                        {assesment.subject}
+                        {assessment.subject}
                       </td>
                       <td className='border border-black p-1 text-center'>
-                        {assesment.assignment}
+                        {assessment.assignment}
                       </td>
                       <td className='border border-black p-1 text-center'>
-                        {assesment.assesment}
+                        {assessment.assessment}
                       </td>
                       <td className='border border-black p-1 text-center'>
-                        {assesment.examination}
+                        {assessment.examination}
                       </td>
                       <td className='border border-black p-1 text-center font-bold'>
-                        {assesment.overall}
+                        {assessment.overall}
                       </td>
                       <td className='border border-black p-1 text-center font-bold'>
                         {' '}
