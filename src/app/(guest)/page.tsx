@@ -25,8 +25,7 @@ export default function LandingPage() {
 
     return (
         <div>
-            <section
-                className="min-h-screen bg-gradient-to-br from-primary via-blue-50 to-background flex items-center justify-center px-4 py-20">
+            <section className="min-h-screen bg-gradient-to-br from-primary via-blue-50 to-background flex items-center justify-center px-4 py-20">
                 <div className="max-w-4xl mx-auto text-center space-y-6">
                     <h1 className="text-5xl md:text-6xl font-bold text-balance">
                         <span className="text-primary">Optimum Achievers</span> Academy
