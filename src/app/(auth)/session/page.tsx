@@ -81,9 +81,9 @@ export default function BranchSelectionPage() {
         toast.success('Branch selected successfully');
 
         if (user?.role === 'PARENT') {
-            window.location.href = '/parent/dashboard';
+            window.location.href = '/parent/wards';
         } else {
-            window.location.href = '/staff/dashboard';
+            window.location.href = '/staff/wards';
         }
     };
 

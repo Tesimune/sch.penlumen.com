@@ -1,13 +1,15 @@
 'use client';
 
-import {toast} from 'sonner';
-import {useUser} from '@/hooks/user';
-import {Plus} from 'lucide-react';
 import {useEffect, useState} from 'react';
-import UsersIndex from '@/components/app/users-table';
-import LoadingPage from '@/components/loading-page';
-import {Button} from '@/components/ui/button';
 import Link from 'next/link';
+
+import {toast} from 'sonner';
+import {Plus} from 'lucide-react';
+import {useUser} from '@/hooks/user';
+import {Button} from '@/components/ui/button';
+
+import LoadingPage from '@/components/loading-page';
+import UsersIndex from '@/components/app/users-table';
 
 interface User {
     uuid: string;
@@ -25,9 +27,10 @@ interface Staff {
 }
 
 export default function StaffPage() {
-    const {index} = useUser();
     const [isLoading, setIsLoading] = useState(false);
     const [staffs, setStaffs] = useState<Staff[] | []>([]);
+
+    const {index} = useUser();
 
     const fetchData = async () => {
         setIsLoading(true);
