@@ -55,7 +55,7 @@ export default function SubjectCreate() {
             if (response.success) {
                 toast.success('Subject created successfully');
                 setName('');
-                router.push(`/staff/classes/subjects?class=${class_uuid}`);
+                router.push(`/staff/subjects?class=${class_uuid}`);
             } else {
                 toast.error('Failed to create subject');
             }
