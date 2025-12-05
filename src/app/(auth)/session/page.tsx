@@ -1,18 +1,20 @@
 'use client';
 
-import Cookies from 'js-cookie';
-import {motion} from 'framer-motion';
-import {useBranch} from '@/hooks/branch';
 import React, {useEffect, useState} from 'react';
+import Cookies from 'js-cookie';
+import Link from "next/link";
+
+import {useBranch} from '@/hooks/branch';
+
 import {Input} from '@/components/ui/input';
 import {Button} from '@/components/ui/button';
 import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar';
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle,} from '@/components/ui/card';
 import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,} from '@/components/ui/dialog';
-import {Check, ChevronRight, Edit, LogOut, Plus, Search, Trash,} from 'lucide-react';
-import LoadingPage from '@/components/loading-page';
+
 import {toast} from 'sonner';
-import Link from "next/link";
+import {motion} from 'framer-motion';
+import {Check, ChevronRight, Edit, LogOut, Plus, Search, Trash,} from 'lucide-react';
 
 interface BranchAccess {
     uuid: string;
@@ -168,12 +170,6 @@ export default function BranchSelectionPage() {
         Cookies.remove('branch');
         window.location.href = '/login';
     };
-
-    if (isLoading) {
-        return (
-            <LoadingPage/>
-        );
-    }
 
     return (
         <div className='flex min-h-screen items-center justify-center bg-muted p-4'>
