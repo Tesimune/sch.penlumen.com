@@ -69,7 +69,7 @@ export function AppSidebar({children}: { children: React.ReactNode }) {
     };
 
     const staffMenuItems = [
-        {title: 'Dashboard', icon: LayoutDashboard, href: '/staff/wards'},
+        {title: 'Dashboard', icon: LayoutDashboard, href: '/staff/dashboard'},
         {title: 'Parents', icon: Users, href: '/staff/parents'},
         {title: 'Staff', icon: GraduationCap, href: '/staff/staffs'},
         {title: 'Classes', icon: BookOpen, href: '/staff/classes'},
