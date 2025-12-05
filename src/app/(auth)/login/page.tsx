@@ -1,17 +1,23 @@
 'use client';
 
-import type React from 'react';
 import {useEffect, useState} from 'react';
-import Cookies from 'js-cookie';
-import {motion} from 'framer-motion';
-import {useAuth} from '@/hooks/auth';
 import {useRouter} from 'next/navigation';
+import Cookies from 'js-cookie';
+import Link from "next/link";
+
+import {Label} from '@/components/ui/label';
+import {Input} from '@/components/ui/input';
 import {Button} from '@/components/ui/button';
 import {Card, CardContent, CardFooter, CardHeader,} from '@/components/ui/card';
-import {Input} from '@/components/ui/input';
-import {Label} from '@/components/ui/label';
+
+
 import {toast} from 'sonner';
-import Link from "next/link";
+import {motion} from 'framer-motion';
+import {useAuth} from '@/hooks/auth';
+
+
+const APP_SLUG = process.env.NEXT_PUBLIC_APP_SLUG_NAME || 'School';
+const APP_LOGO = process.env.NEXT_PUBLIC_APP_LOGO || '/placeholder.svg';
 
 export default function LoginPage() {
     const router = useRouter();
@@ -69,9 +75,6 @@ export default function LoginPage() {
         }
     };
 
-    const APP_SLUG = process.env.NEXT_PUBLIC_APP_SLUG_NAME || 'School';
-    const APP_LOGO = process.env.NEXT_PUBLIC_APP_LOGO || '/placeholder.svg';
-
     return (
         <div className='flex min-h-screen items-center justify-center bg-muted p-4 sm:p-6 lg:p-8'>
             <div className='w-full max-w-sm sm:max-w-md'>
@@ -92,6 +95,9 @@ export default function LoginPage() {
                                         width={48}
                                         height={48}
                                         className="w-full h-full object-contain"
+                                        onError={(e) => {
+                                            e.currentTarget.src = "/placeholder.svg"
+                                        }}
                                     />
                                 </div>
                                 <span className="hidden md:inline text-lg font-bold text-primary">{APP_SLUG}</span>

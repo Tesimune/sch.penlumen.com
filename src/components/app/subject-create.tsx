@@ -48,6 +48,7 @@ export default function SubjectCreate() {
     }, [class_uuid, router]);
 
     const handleSubmit = async (e: React.FormEvent) => {
+        setIsLoading(true)
         e.preventDefault();
         try {
             const response = await create(class_uuid as string, name);
