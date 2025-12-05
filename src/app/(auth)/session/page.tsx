@@ -28,15 +28,18 @@ interface Branch {
     branch: BranchAccess;
 }
 
+
+const APP_SLUG = process.env.NEXT_PUBLIC_APP_SLUG_NAME || 'School';
+const APP_LOGO = process.env.NEXT_PUBLIC_APP_LOGO || '/placeholder.svg';
+
 export default function BranchSelectionPage() {
     const {index, create, update, remove} = useBranch();
     const [branches, setBranches] = useState<Branch[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
-    const [isSaving, setIsSavingisSaving] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -52,11 +55,17 @@ export default function BranchSelectionPage() {
             return;
         }
 
-        const response = await index();
-        if (!response.success) {
-            toast.error(response.message || 'Something went wrong');
-        } else {
-            setBranches(response.data.branch_access);
+        try {
+            const response = await index();
+            if (!response.success) {
+                toast.error(response.message || 'Something went wrong');
+            } else {
+                setBranches(response.data.branch_access);
+            }
+        } catch (error: any) {
+            toast.error(error.message || 'Something went wrong');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -83,13 +92,24 @@ export default function BranchSelectionPage() {
         if (user?.role === 'PARENT') {
             window.location.href = '/parent/wards';
         } else {
-            window.location.href = '/staff/wards';
+            window.location.href = '/staff/dashboard';
         }
+    };
+
+    const handleReset = () => {
+        setFormData({
+            name: '',
+            email: '',
+            contact: '',
+            address: '',
+        });
+        setSelectedBranch(null);
+        setShowCreateModal(true);
     };
 
     const saveBranch = async () => {
         try {
-            setIsSavingisSaving(true);
+            setIsLoading(true)
             let response;
             if (selectedBranch) {
                 response = await update(selectedBranch, formData);
@@ -97,13 +117,7 @@ export default function BranchSelectionPage() {
                 response = await create(formData);
             }
             if (response.success) {
-                setFormData({
-                    name: '',
-                    email: '',
-                    contact: '',
-                    address: '',
-                });
-                fetchData();
+                handleReset()
                 setShowCreateModal(false);
             } else {
                 toast(response.message || 'Something went wrong');
@@ -111,7 +125,7 @@ export default function BranchSelectionPage() {
         } catch (error: any) {
             toast(error.message || 'Something went wrong');
         } finally {
-            setIsSavingisSaving(false);
+            fetchData()
         }
     };
 
@@ -145,19 +159,8 @@ export default function BranchSelectionPage() {
         } catch (error: any) {
             toast.error(error.message || 'Something went wrong');
         } finally {
-            setIsLoading(false);
+            fetchData()
         }
-    };
-
-    const handleReset = () => {
-        setFormData({
-            name: '',
-            email: '',
-            contact: '',
-            address: '',
-        });
-        setSelectedBranch(null);
-        setShowCreateModal(true);
     };
 
     const handleLogout = () => {
@@ -166,11 +169,10 @@ export default function BranchSelectionPage() {
         window.location.href = '/login';
     };
 
-    const APP_SLUG = process.env.NEXT_PUBLIC_APP_SLUG_NAME || 'School';
-    const APP_LOGO = process.env.NEXT_PUBLIC_APP_LOGO || '/placeholder.svg';
-
     if (isLoading) {
-        return <LoadingPage/>;
+        return (
+            <LoadingPage/>
+        );
     }
 
     return (
@@ -216,12 +218,12 @@ export default function BranchSelectionPage() {
                         <Button
                             variant='outline'
                             onClick={() => setShowCreateModal(false)}
-                            disabled={isSaving}
+                            disabled={isLoading}
                         >
                             Cancel
                         </Button>
-                        <Button onClick={() => saveBranch()} disabled={isSaving}>
-                            {isSaving ? 'Saving...' : 'Save Branch'}
+                        <Button onClick={() => saveBranch()} disabled={isLoading}>
+                            {isLoading ? 'Saving...' : 'Save Branch'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
