@@ -15,7 +15,6 @@ const geistMono = Geist_Mono({
 
 const APP_NAME = process.env.NEXT_PUBLIC_APP_FULL_NAME || 'School';
 const APP_LOGO = process.env.NEXT_PUBLIC_APP_LOGO || '/placeholder.svg';
-const THEME_CSS = process.env.NEXT_PUBLIC_THEME_CSS_URL as string || '/css/default.css';
 
 export const metadata: Metadata = {
     title: APP_NAME,
@@ -33,15 +32,10 @@ export const metadata: Metadata = {
 export default function RootLayout({children}: { children: React.ReactNode }) {
     return (
         <html lang="en" suppressHydrationWarning>
-        <head>
-            {/* External theme must load AFTER globals */}
-            <link rel="stylesheet" href={THEME_CSS}/>
-        </head>
-
-        <body className={`theme-external ${geistSans.variable} ${geistMono.variable}`}>
-        <main>{children}</main>
-        <Toaster/>
-        </body>
+            <body className={`${geistSans.variable} ${geistMono.variable}`}>
+                <main>{children}</main>
+                <Toaster/>
+            </body>
         </html>
     );
 }

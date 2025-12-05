@@ -32,7 +32,7 @@ export default function ParentPage() {
     const fetchData = async () => {
         setIsLoading(true);
         try {
-            const response = await index('parents');
+            const response = await index('parent');
             if (response.success) {
                 setParents(response.data.user);
             } else {
