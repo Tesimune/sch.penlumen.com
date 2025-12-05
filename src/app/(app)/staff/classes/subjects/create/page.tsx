@@ -19,7 +19,7 @@ interface Class {
 export default function CreateSubject() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const uuid = searchParams.get('class');
+    const class_uuid = searchParams.get('class');
 
     const {show} = useClass();
     const {create} = useSubject();
@@ -30,7 +30,7 @@ export default function CreateSubject() {
 
     const fetchData = async () => {
         setIsLoading(true);
-        const resClass = await show(uuid as string);
+        const resClass = await show(class_uuid as string);
         if (resClass.success) {
             setClasses({
                 uuid: resClass.data.class.uuid,
@@ -41,25 +41,25 @@ export default function CreateSubject() {
     };
 
     useEffect(() => {
-        if (!uuid) {
+        if (!class_uuid) {
             router.back();
         }
         fetchData();
-    }, [uuid, router]);
+    }, [class_uuid, router]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const response = await create(uuid as string, name);
+            const response = await create(class_uuid as string, name);
             if (response.success) {
                 toast.success('Subject created successfully');
                 setName('');
-                router.push(`/staff/classes/subjects?class=${uuid}`);
+                router.push(`/staff/classes/subjects?class=${class_uuid}`);
             } else {
                 toast.error('Failed to create subject');
             }
         } catch (error: any) {
-            toast(error.message || 'Something went wront');
+            toast(error.message || 'Something went wrong');
         } finally {
             setIsLoading(false);
         }

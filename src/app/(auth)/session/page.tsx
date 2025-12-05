@@ -269,6 +269,9 @@ export default function BranchSelectionPage() {
                                         width={48}
                                         height={48}
                                         className="w-full h-full object-contain"
+                                        onError={(e) => {
+                                            e.currentTarget.src = "/placeholder.svg"
+                                        }}
                                     />
                                 </div>
                                 <span className="hidden md:inline text-lg font-bold text-primary">{APP_SLUG}</span>

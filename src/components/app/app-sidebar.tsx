@@ -115,7 +115,7 @@ export function AppSidebar({children}: { children: React.ReactNode }) {
             <div className='flex min-h-screen w-full bg-background'>
                 {/* Sidebar */}
                 <Sidebar className='border-r border-border'>
-                    <SidebarHeader className='flex justify-start items-center order-b border-border p-2 h-16'>
+                    <SidebarHeader className='flex justify-start order-b border-border p-2 h-16'>
                         <Link href="/" className="flex items-center gap-3">
                             <div className="w-12 h-12 relative">
                                 <img
@@ -124,6 +124,9 @@ export function AppSidebar({children}: { children: React.ReactNode }) {
                                     width={48}
                                     height={48}
                                     className="w-full h-full object-contain"
+                                    onError={(e) => {
+                                        e.currentTarget.src = "/placeholder.svg"
+                                    }}
                                 />
                             </div>
                             <span className="hidden md:inline text-lg font-bold text-primary">{APP_SLUG}</span>
