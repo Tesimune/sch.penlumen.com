@@ -20,9 +20,9 @@ export const useSubject = () => {
         }
     };
 
-    const show = async (class_uuid: string) => {
+    const show = async (subject_uuid: string) => {
         const response = await axiosInstance.get(
-            `/api/v1/subject/show/${class_uuid}`
+            `/api/v1/subject/show/${subject_uuid}`
         );
         const data = response.data;
 
@@ -61,9 +61,9 @@ export const useSubject = () => {
         }
     };
 
-    const update = async (uuid: string, class_uuid: string, name: string) => {
+    const update = async (subject_uuid: string, class_uuid: string, name: string) => {
         const response = await axiosInstance.patch(
-            `/api/v1/subject/update/${uuid}`,
+            `/api/v1/subject/update/${subject_uuid}`,
             {
                 name,
                 class_uuid,

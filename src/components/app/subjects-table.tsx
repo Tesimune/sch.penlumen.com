@@ -74,7 +74,7 @@ export default function SubjectsTable({fetchData, filteredSubjects}: {
                                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                             <DropdownMenuItem>
                                                 <Link
-                                                    href={`/staff/subjects/${subject.uuid}?class=${subject.class_uuid}`}>
+                                                    href={`/staff/subjects/show?class=${subject.class_uuid}&subject=${subject.uuid}`}>
                                                     Show Subject
                                                 </Link>
                                             </DropdownMenuItem>
