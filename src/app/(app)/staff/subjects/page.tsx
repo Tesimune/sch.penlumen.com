@@ -104,7 +104,7 @@ export default function StudentsPage() {
                             Edit class
                         </Button>
                     </Link>
-                    <Link href={`/staff/classes/subjects/create?class=${uuid}`}>
+                    <Link href={`/staff/subjects/create?class=${uuid}`}>
                         <Button size='sm' className='flex items-center rounded-none'>
                             <Plus className='h-4 w-4'/>
                             <span>Add Subject</span>

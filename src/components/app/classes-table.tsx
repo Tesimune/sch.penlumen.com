@@ -137,7 +137,7 @@ export default function ClassesTable(
                                             </DropdownMenuItem>
                                             <DropdownMenuItem>
                                                 <Link
-                                                    href={`/staff/classes/subjects?class=${classItem.uuid}`}
+                                                    href={`/staff/subjects?class=${classItem.uuid}`}
                                                 >
                                                     Show Subjects
                                                 </Link>
