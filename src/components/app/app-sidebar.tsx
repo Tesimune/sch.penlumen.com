@@ -1,22 +1,10 @@
 'use client';
-import type React from 'react';
-import {useEffect, useState} from 'react';
 
-import Link from 'next/link';
+import {useEffect, useState} from 'react';
 import Cookies from 'js-cookie';
+import Link from 'next/link';
+
 import {usePathname, useRouter} from 'next/navigation';
-import {
-    BarChart3,
-    BookOpen,
-    Calendar,
-    ChevronDown,
-    GraduationCap,
-    LayoutDashboard,
-    LogOut,
-    Settings,
-    User,
-    Users,
-} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar';
 import {
@@ -41,6 +29,19 @@ import {
     SidebarProvider,
     SidebarTrigger,
 } from '@/components/ui/sidebar';
+
+import {
+    BarChart3,
+    BookOpen,
+    Calendar,
+    ChevronDown,
+    GraduationCap,
+    LayoutDashboard,
+    LogOut,
+    Settings,
+    User,
+    Users,
+} from 'lucide-react';
 
 interface UserProfile {
     name: string;
@@ -68,7 +69,7 @@ export function AppSidebar({children}: { children: React.ReactNode }) {
     };
 
     const staffMenuItems = [
-        {title: 'Dashboard', icon: LayoutDashboard, href: '/staff/dashboard'},
+        {title: 'Dashboard', icon: LayoutDashboard, href: '/staff/wards'},
         {title: 'Parents', icon: Users, href: '/staff/parents'},
         {title: 'Staff', icon: GraduationCap, href: '/staff/staffs'},
         {title: 'Classes', icon: BookOpen, href: '/staff/classes'},
@@ -79,8 +80,7 @@ export function AppSidebar({children}: { children: React.ReactNode }) {
     ];
 
     const parentsMenuItems = [
-        {title: 'Dashboard', icon: LayoutDashboard, href: '/parents/dashboard'},
-        {title: 'My Children', icon: Users, href: '/parents/children'},
+        {title: 'Wards', icon: LayoutDashboard, href: '/parents/wards'},
     ];
 
     useEffect(() => {
@@ -156,8 +156,8 @@ export function AppSidebar({children}: { children: React.ReactNode }) {
                                                     <Link href={item.href} className='px-6 py-3'>
                                                         <item.icon className='h-5 w-5 flex-shrink-0'/>
                                                         <span className='font-light text-sm'>
-                              {item.title}
-                            </span>
+                                                          {item.title}
+                                                        </span>
                                                     </Link>
                                                 </SidebarMenuButton>
                                             </SidebarMenuItem>
@@ -200,10 +200,10 @@ export function AppSidebar({children}: { children: React.ReactNode }) {
                                                 {profile?.name?.charAt(0).toUpperCase() || 'U'}
                                             </AvatarFallback>
                                         </Avatar>
-                                        <div className='flex flex-col items-start text-sm'>
-                      <span className='font-semibold'>
-                        {profile?.name || 'Unknown'}
-                      </span>
+                                        <div className='hidden md:flex flex-col items-start text-sm'>
+                                          <span className='font-semibold'>
+                                            {profile?.name || 'Unknown'}
+                                          </span>
                                         </div>
                                     </div>
                                     <ChevronDown className='h-4 w-4 opacity-50 ml-2'/>
