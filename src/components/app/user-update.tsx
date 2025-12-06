@@ -83,10 +83,9 @@ export default function UserUpdatePage({ role }: { role: string }) {
 
     try {
       const response = await update(uuid, formData);
-      console.log(response);
       if (response.success) {
         toast.success('User updated successfully');
-        router.push(`/staffs/${role}s`);
+          router.push(`/staff/${role}s`);
       } else {
         toast.error(response.message || 'Unable to update user');
       }
