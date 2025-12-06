@@ -90,17 +90,13 @@ export default function UsersTable({
 
   const getBadgeVariant = (position: string) => {
     switch (position?.toLowerCase()) {
-      case 'administrator':
+      case 'ADMINISTRATIVE':
         return 'default';
-      case 'principal':
-        return 'default';
-      case 'vice principal':
-        return 'secondary';
-      case 'teacher':
+      case 'ACADEMIC':
         return 'outline';
-      case 'parent':
+      case 'PARENT':
         return 'default';
-      case 'guardian':
+      case 'GUARDIAN':
         return 'outline';
       default:
         return 'outline';
