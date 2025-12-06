@@ -31,11 +31,11 @@ export default function UserCreatePage({role}: { role: string }) {
 
     useEffect(() => {
         if (role === 'staff') {
-            setPositions(['administrator', 'principal', 'vice principal', 'teacher']);
+            setPositions(['ADMINISTRATIVE', 'ACADEMIC']);
         } else if (role === 'parent') {
-            setPositions(['parent', 'guardian']);
+            setPositions(['PARENT', 'GUARDIAN']);
         } else {
-            setPositions(['student']);
+            setPositions(['STUDENT']);
         }
     }, [role]);
 
