@@ -89,7 +89,7 @@ export default function UsersTable({
   };
 
   const getBadgeVariant = (position: string) => {
-    switch (position?.toLowerCase()) {
+    switch (position) {
       case 'ADMINISTRATIVE':
         return 'default';
       case 'ACADEMIC':
