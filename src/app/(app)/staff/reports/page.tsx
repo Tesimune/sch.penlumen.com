@@ -78,7 +78,7 @@ export default function ReportsPage() {
         try {
             const response = await index(page, statusFilter as string);
             if (response.success) {
-                setReports([...response.data.results]);
+                setReports(prev => [...prev, ...response.data.results]);
             }
         } catch (error: any) {
             toast.error(error.message || 'Something went wrong');
