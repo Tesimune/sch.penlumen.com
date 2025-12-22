@@ -96,7 +96,7 @@ export default function ReportsPage() {
     useEffect(() => {
         const timeout = setTimeout(() => {
             fetchedReports();
-        }, searchQuery ? 400 : 0);
+        }, searchQuery ? 900 : 0);
 
         return () => clearTimeout(timeout);
     }, [page, statusFilter, searchQuery]);
@@ -175,6 +175,7 @@ export default function ReportsPage() {
                         <div className='relative w-full'>
                             <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground'/>
                             <Input
+                                autoFocus={true}
                                 placeholder='Search classes...'
                                 className='pl-8'
                                 value={searchQuery}

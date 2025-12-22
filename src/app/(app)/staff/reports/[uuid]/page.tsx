@@ -158,8 +158,8 @@ export default function ReportPage() {
     }
 
     return (
-        <div className='space-y-6 p-6'>
-            <div className='flex justify-between items-center border-b pb-6'>
+        <div className='space-y-6'>
+            <div className='grid md:flex justify-between items-center gap-5 border-b pb-6'>
                 <h1 className='text-2xl font-bold'>Student Report Card</h1>
                 <div className='flex gap-2'>
                     {!isEditing ? (
@@ -215,7 +215,7 @@ export default function ReportPage() {
                             <p className='text-sm text-muted-foreground'>
                                 {report.student.reg_number}
                             </p>
-                            <div className='flex items-center gap-4 mt-3'>
+                            <div className='grid md:flex items-center gap-4 mt-3'>
                                 <Badge variant='outline'>{report.class_name}</Badge>
                                 <Badge
                                     className={
