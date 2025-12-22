@@ -61,7 +61,7 @@ interface Report {
 }
 
 interface ReportsPageProps {
-    userRole: 'admin' | 'teacher' | 'staff';
+    userRole: 'ADMINISTRATIVE' | 'ACADEMIC';
 }
 
 export default function ReportsPage() {
@@ -69,15 +69,16 @@ export default function ReportsPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [reports, setReports] = useState<Report[]>([]);
     const [statusFilter, setStatusFilter] = useState('PENDING');
+    const [page, setPage] = useState(1);
 
     const {index, remove} = useResult();
 
     const fetchedReports = async () => {
+        setIsLoading(true)
         try {
-            const response = await index(statusFilter as string);
+            const response = await index(page, statusFilter as string);
             if (response.success) {
-                setReports(response.data.results);
-
+                setReports([...response.data.results]);
             }
         } catch (error: any) {
             toast.error(error.message || 'Something went wrong');
@@ -89,7 +90,7 @@ export default function ReportsPage() {
 
     useEffect(() => {
         fetchedReports();
-    }, []);
+    }, [page, statusFilter]);
 
     const filteredReports = reports.filter((report) => {
         const matchesSearch =
@@ -302,6 +303,13 @@ export default function ReportsPage() {
                                 )}
                             </TableBody>
                         </Table>
+                        <div className='flex flex-col items-center gap-2'>
+                            <span
+                                className='flex justify-center items-center min-h-9 min-w-9 border rounded-full'>{page}</span>
+                            <button className='underline cursor-pointer' onClick={() => setPage(page + 1)}>
+                                Load More...
+                            </button>
+                        </div>
                     </div>
                 </CardContent>
             </Card>
