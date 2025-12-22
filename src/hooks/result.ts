@@ -16,9 +16,9 @@ type AssessmentObject = {
 };
 
 export const useResult = () => {
-    const index = async (statusFilter: string) => {
+    const index = async (page: number, statusFilter: string) => {
         const response = await axiosInstance.get(
-            `/api/v1/result/index?status=${statusFilter}`
+            `/api/v1/result/index?page=${page}&status=${statusFilter}`
         );
         const data = response.data;
 

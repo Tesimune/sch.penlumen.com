@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect, useState} from 'react';
-import {Clock, Edit, Save, X} from 'lucide-react';
+import {Clock, Edit, Printer as Print, Save, X} from 'lucide-react';
 import {Label} from '@/components/ui/label';
 import {Badge} from '@/components/ui/badge';
 import {Button} from '@/components/ui/button';
@@ -170,7 +170,7 @@ export default function ReportPage() {
                             </Button>
                             <Link href={`/report/${report.uuid}`} target='_blank'>
                                 <Button className='gap-2'>
-                                    <Save className='h-4 w-4'/>
+                                    <Print className='h-4 w-4'/>
                                     <span>Print Report</span>
                                 </Button>
                             </Link>

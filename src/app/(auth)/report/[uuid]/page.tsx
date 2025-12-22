@@ -25,6 +25,7 @@ interface AssessmentObject {
 }
 
 interface ResultData {
+    class_name: string
     student: StudentData;
     assessments: AssessmentObject[];
     teacher_remark: string;
@@ -57,6 +58,7 @@ export default function TraditionalResultSheet() {
             const response = await view(uuid as string);
             if (response.success) {
                 const result = response.data.result;
+                console.log(result);
                 setResultData(result);
                 setAssessments(result.assessments || []);
                 handlePrint()
@@ -113,44 +115,44 @@ export default function TraditionalResultSheet() {
                             <div className='info-row'>
                                 <div className='info-field'>
                                     <span className='label'>NAME:</span>
-                                    <span className='underline'>{resultData.student.name}</span>
+                                    <span className='underline-field'>{resultData.student.name}</span>
                                 </div>
                                 <div className='info-field'>
                                     <span className='label'>SESSION:</span>
-                                    <span className='underline'> </span>
+                                    <span className='underline-field'> </span>
                                 </div>
                             </div>
 
                             <div className='info-row'>
                                 <div className='info-field'>
                                     <span className='label'>CLASS:</span>
-                                    <span className='underline'> </span>
+                                    <span className='underline-field'>{resultData.class_name}</span>
                                 </div>
                                 <div className='info-field'>
                                     <span className='label'>TERM:</span>
-                                    <span className='underline'> </span>
+                                    <span className='underline-field'> </span>
                                 </div>
                             </div>
 
                             <div className='info-row'>
                                 <div className='info-field'>
                                     <span className='label'>POSITION:</span>
-                                    <span className='underline'> </span>
+                                    <span className='underline-field'> </span>
                                 </div>
                                 <div className='info-field'>
                                     <span className='label'>NO. OF STUDENTS:</span>
-                                    <span className='underline'> </span>
+                                    <span className='underline-field'> </span>
                                 </div>
                             </div>
 
                             <div className='info-row'>
                                 <div className='info-field'>
                                     <span className='label'>CLOSING DATE:</span>
-                                    <span className='underline'> </span>
+                                    <span className='underline-field'> </span>
                                 </div>
                                 <div className='info-field'>
                                     <span className='label'>RESUMPTION DATE:</span>
-                                    <span className='underline'> </span>
+                                    <span className='underline-field'> </span>
                                 </div>
                             </div>
                         </div>
@@ -430,7 +432,7 @@ export default function TraditionalResultSheet() {
                     margin-right: 8px;
                 }
 
-                .underline {
+                .underline-field {
                     flex: 1;
                     border-bottom: 1px solid black;
                     padding-bottom: 2px;
