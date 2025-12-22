@@ -80,10 +80,14 @@ export default function ReportsPage() {
             const response = await index(page, searchQuery as string, statusFilter as string);
 
             if (response.success) {
-                setReports(prevReports => [
-                    ...prevReports,
-                    ...response.data.results
-                ]);
+                if(searchQuery.length >= 3){
+                    setReports([response.data.result])
+                }else{
+                    setReports(prevReports => [
+                        ...prevReports,
+                        ...response.data.results
+                    ]);
+                }
             }
         } catch (error: any) {
             toast.error(error.message || 'Something went wrong');
