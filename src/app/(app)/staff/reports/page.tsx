@@ -77,7 +77,7 @@ export default function ReportsPage() {
         setIsLoading(true);
 
         try {
-            const response = await index(page, statusFilter as string);
+            const response = await index(page, searchQuery as string, statusFilter as string);
 
             if (response.success) {
                 setReports(prevReports => [
@@ -95,18 +95,8 @@ export default function ReportsPage() {
 
     useEffect(() => {
         fetchedReports();
-    }, [page, statusFilter]);
+    }, [page, searchQuery, statusFilter]);
 
-    const filteredReports = reports.filter((report) => {
-        const matchesSearch =
-            report.student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            report.student.reg_number
-                .toLowerCase()
-                .includes(searchQuery.toLowerCase()) ||
-            report.uuid.toLowerCase().includes(searchQuery.toLowerCase());
-
-        return matchesSearch;
-    });
 
     const getStatusBadge = (status: string) => {
         const statusConfig = {
@@ -214,7 +204,7 @@ export default function ReportsPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {filteredReports.length === 0 ? (
+                                {reports.length === 0 ? (
                                     <TableRow>
                                         <TableCell colSpan={8} className='h-24 text-center'>
                                             <div className='flex flex-col items-center gap-2'>
@@ -228,7 +218,7 @@ export default function ReportsPage() {
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                    filteredReports.map((report) => (
+                                    reports.map((report) => (
                                         <TableRow key={report.uuid}>
                                             <TableCell>
                                                 <div className='flex items-center gap-3'>

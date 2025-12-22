@@ -16,10 +16,17 @@ type AssessmentObject = {
 };
 
 export const useResult = () => {
-    const index = async (page: number, statusFilter: string) => {
-        const response = await axiosInstance.get(
-            `/api/v1/result/index?page=${page}&status=${statusFilter}`
-        );
+    const index = async (page: number, searchQuery: string, statusFilter: string) => {
+        let response;
+        if (searchQuery.length >= 3) {
+            response = await axiosInstance.get(
+                `/api/v1/result/index?page=${page}&search=${searchQuery}`
+            );
+        } else {
+            response = await axiosInstance.get(
+                `/api/v1/result/index?page=${page}&status=${statusFilter}`
+            );
+        }
         const data = response.data;
 
         if (!data.success || !data.data) {
