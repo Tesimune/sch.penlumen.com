@@ -309,8 +309,6 @@ export default function ReportsPage() {
                             </TableBody>
                         </Table>
                         <div className='flex flex-col items-center gap-2'>
-                            <span
-                                className='flex justify-center items-center min-h-9 min-w-9 border rounded-full'>{page}</span>
                             <button className='underline cursor-pointer' onClick={() => setPage(page + 1)}>
                                 Load More...
                             </button>
