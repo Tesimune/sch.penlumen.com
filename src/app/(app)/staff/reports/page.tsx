@@ -74,18 +74,23 @@ export default function ReportsPage() {
     const {index, remove} = useResult();
 
     const fetchedReports = async () => {
-        setIsLoading(true)
+        setIsLoading(true);
+
         try {
             const response = await index(page, statusFilter as string);
+
             if (response.success) {
-                setReports(prev => [...prev, ...response.data.results]);
+                setReports(prevReports => [
+                    ...prevReports,
+                    ...response.data.results
+                ]);
             }
         } catch (error: any) {
             toast.error(error.message || 'Something went wrong');
         } finally {
-            setIsLoading(false)
+            setIsLoading(false);
         }
-    }
+    };
 
 
     useEffect(() => {
