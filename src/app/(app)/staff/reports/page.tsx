@@ -94,8 +94,12 @@ export default function ReportsPage() {
 
 
     useEffect(() => {
-        fetchedReports();
-    }, [page, statusFilter]);
+        const timeout = setTimeout(() => {
+            fetchedReports();
+        }, searchQuery ? 400 : 0);
+
+        return () => clearTimeout(timeout);
+    }, [page, statusFilter, searchQuery]);
 
 
     const getStatusBadge = (status: string) => {
@@ -168,10 +172,7 @@ export default function ReportsPage() {
             <Card className='shadow-none rounded-none'>
                 <CardHeader className='flex flex-col gap-4 sm:flex-row sm:items-center'>
                     <div className='flex flex-col sm:flex-row w-full gap-4 mb-6'>
-                        <form onSubmit={(e) => {
-                            e.preventDefault()
-                            fetchedReports()
-                        }} className='relative w-full'>
+                        <div className='relative w-full'>
                             <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground'/>
                             <Input
                                 placeholder='Search classes...'
@@ -179,7 +180,7 @@ export default function ReportsPage() {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
-                        </form>
+                        </div>
                         <Select value={statusFilter} onValueChange={setStatusFilter}>
                             <SelectTrigger className='w-full sm:w-40'>
                                 <SelectValue placeholder='Status'/>
