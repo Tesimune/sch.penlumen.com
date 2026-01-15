@@ -9,6 +9,12 @@ import LoadingPage from '@/components/loading-page';
 import {useResult} from '@/hooks/result';
 import {useParams} from 'next/navigation';
 
+interface GradingScale {
+    grade: string;
+    score: number;
+    remark: string;
+}
+
 interface StudentData {
     uuid: string;
     name: string;
@@ -22,15 +28,63 @@ interface AssessmentObject {
     assessment: number;
     examination: number;
     overall: number;
+    grade?: string;  // Added optional fields if they come from the API
+    remark?: string;
+}
+
+interface CalendarData {
+    session: string;
+    term: string;
+    close_date: string;
+    open_date: string;
+}
+
+interface ResultSummary {
+    position: string | number;
+    total_students: number;
 }
 
 interface ResultData {
-    class_name: string
-    student: StudentData;
+    // Matches the nesting used in your JSX (e.g., resultData.result.student)
+    result: {
+        student: StudentData;
+        calendar: CalendarData;
+        class_name: string;
+        teacher_remark: string;
+        principal_remark: string;
+    };
+    summary: ResultSummary;
     assessments: AssessmentObject[];
-    teacher_remark: string;
-    principal_remark: string;
+    grading_system?: GradingScale[]; // Optional in case API doesn't provide it
 }
+
+
+const DEFAULT_GRADING_SYSTEM: GradingScale[] = [
+    {grade: "A", score: 90, remark: "Excellent"},
+    {grade: "B", score: 80, remark: "Very Good"},
+    {grade: "C", score: 60, remark: "Good"},
+    {grade: "D", score: 50, remark: "Fairly Good"},
+    {grade: "F", score: 0, remark: "Failed"},
+]
+
+const getGradeAndRemark = (score: number, gradingSystem: GradingScale[]): { grade: string; remark: string } => {
+    const sorted = [...gradingSystem].sort((a, b) => b.score - a.score)
+    for (const item of sorted) {
+        if (score >= item.score) {
+            return {grade: item.grade, remark: item.remark}
+        }
+    }
+    return {grade: "F", remark: "Failed"}
+}
+
+const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return "N/A";
+    return new Date(dateString).toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+    });
+};
 
 export default function TraditionalResultSheet() {
     const [resultData, setResultData] = useState<ResultData | null>(null);
@@ -53,14 +107,15 @@ export default function TraditionalResultSheet() {
         }, 100);
     };
 
+    const gradingSystem = resultData?.grading_system || DEFAULT_GRADING_SYSTEM
     const fetchData = async () => {
         try {
             const response = await view(uuid as string);
             if (response.success) {
-                const result = response.data.result;
-                console.log(result);
-                setResultData(result);
-                setAssessments(result.assessments || []);
+                const data = response.data;
+                console.log(data);
+                setResultData(data);
+                setAssessments(data.assessments || []);
                 handlePrint()
             }
         } catch (error) {
@@ -115,44 +170,44 @@ export default function TraditionalResultSheet() {
                             <div className='info-row'>
                                 <div className='info-field'>
                                     <span className='label'>NAME:</span>
-                                    <span className='underline-field'>{resultData.student.name}</span>
+                                    <span className='underline-field'>{resultData.result.student.name}</span>
                                 </div>
                                 <div className='info-field'>
                                     <span className='label'>SESSION:</span>
-                                    <span className='underline-field'> </span>
+                                    <span className='underline-field'>{resultData.result.calendar?.session}</span>
                                 </div>
                             </div>
 
                             <div className='info-row'>
                                 <div className='info-field'>
                                     <span className='label'>CLASS:</span>
-                                    <span className='underline-field'>{resultData.class_name}</span>
+                                    <span className='underline-field'>{resultData.result.class_name}</span>
                                 </div>
                                 <div className='info-field'>
                                     <span className='label'>TERM:</span>
-                                    <span className='underline-field'> </span>
+                                    <span className='underline-field'>{resultData.result.calendar?.term}</span>
                                 </div>
                             </div>
 
                             <div className='info-row'>
                                 <div className='info-field'>
                                     <span className='label'>POSITION:</span>
-                                    <span className='underline-field'> </span>
+                                    <span className='underline-field'>{resultData.summary.position}</span>
                                 </div>
                                 <div className='info-field'>
                                     <span className='label'>NO. OF STUDENTS:</span>
-                                    <span className='underline-field'> </span>
+                                    <span className='underline-field'>{resultData.summary.total_students}</span>
                                 </div>
                             </div>
 
                             <div className='info-row'>
                                 <div className='info-field'>
                                     <span className='label'>CLOSING DATE:</span>
-                                    <span className='underline-field'> </span>
+                                    <span className='underline-field'>{formatDate(resultData.result.calendar?.close_date)}</span>
                                 </div>
                                 <div className='info-field'>
                                     <span className='label'>RESUMPTION DATE:</span>
-                                    <span className='underline-field'> </span>
+                                    <span className='underline-field'>{formatDate(resultData.result.calendar?.open_date)}</span>
                                 </div>
                             </div>
                         </div>
@@ -169,7 +224,7 @@ export default function TraditionalResultSheet() {
                                         ASSIGNMENT
                                     </th>
                                     <th className='border border-black p-1 text-center font-bold text-xs'>
-                                        ASSESMENT
+                                        ASSESSMENT
                                     </th>
                                     <th className='border border-black p-1 text-center font-bold text-xs'>
                                         EXAMINATION
@@ -204,10 +259,10 @@ export default function TraditionalResultSheet() {
                                             {assessment.overall}
                                         </td>
                                         <td className='border border-black p-1 text-center font-bold'>
-                                            {' '}
+                                            {assessment.grade || getGradeAndRemark(assessment.overall, gradingSystem).grade}
                                         </td>
                                         <td className='border border-black p-1 text-center text-xs'>
-                                            {' '}
+                                            {assessment.remark}
                                         </td>
                                     </tr>
                                 ))}
@@ -312,50 +367,16 @@ export default function TraditionalResultSheet() {
                                 </div>
 
                                 {/* Grading System */}
-                                <div className='grading-system'>
-                                    <h3 className='font-bold mb-2'>GRADING SYSTEM</h3>
-                                    <table className='border-collapse border border-black w-full'>
+                                <div className="grading-system">
+                                    <h3 className="font-bold mb-2">GRADING SYSTEM</h3>
+                                    <table className="border-collapse border border-black w-full">
                                         <tbody>
-                                        <tr>
-                                            <td className='border border-black p-1 text-center font-bold'>
-                                                A
-                                            </td>
-                                            <td className='border border-black p-1 text-center'>
-                                                70-100
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td className='border border-black p-1 text-center font-bold'>
-                                                B
-                                            </td>
-                                            <td className='border border-black p-1 text-center'>
-                                                60-69
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td className='border border-black p-1 text-center font-bold'>
-                                                C
-                                            </td>
-                                            <td className='border border-black p-1 text-center'>
-                                                50-59
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td className='border border-black p-1 text-center font-bold'>
-                                                D
-                                            </td>
-                                            <td className='border border-black p-1 text-center'>
-                                                40-49
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td className='border border-black p-1 text-center font-bold'>
-                                                E
-                                            </td>
-                                            <td className='border border-black p-1 text-center'>
-                                                0-39
-                                            </td>
-                                        </tr>
+                                        {gradingSystem.map((item, index) => (
+                                            <tr key={index}>
+                                                <td className="border border-black p-1 text-center font-bold">{item.grade}</td>
+                                                <td className="border border-black p-1 text-center text-xs">{item.remark}</td>
+                                            </tr>
+                                        ))}
                                         </tbody>
                                     </table>
                                 </div>
@@ -368,7 +389,7 @@ export default function TraditionalResultSheet() {
                                 <div className='flex items-center'>
                                     <span className='font-bold mr-2'>TEACHER REMARK:</span>
                                     <div className='flex-1 border-b border-black'>
-                                        {resultData.teacher_remark}
+                                        {resultData.result.teacher_remark}
                                     </div>
                                 </div>
                             </div>
@@ -377,7 +398,7 @@ export default function TraditionalResultSheet() {
                                 <div className='flex items-center'>
                                     <span className='font-bold mr-2'>PRINCIPAL REMARK:</span>
                                     <div className='flex-1 border-b border-black'>
-                                        {resultData.principal_remark}
+                                        {resultData.result.principal_remark}
                                     </div>
                                 </div>
                             </div>

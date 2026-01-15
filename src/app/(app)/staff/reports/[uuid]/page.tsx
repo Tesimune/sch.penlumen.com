@@ -2,18 +2,24 @@
 
 import {useEffect, useState} from 'react';
 import {Clock, Edit, Printer as Print, Save, X} from 'lucide-react';
-import {Label} from '@/components/ui/label';
 import {Badge} from '@/components/ui/badge';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Textarea} from '@/components/ui/textarea';
 import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar';
 import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow,} from '@/components/ui/table';
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@/components/ui/table';
 import Link from 'next/link';
 import {useResult} from '@/hooks/result';
 import {useParams} from 'next/navigation';
 import LoadingPage from '@/components/loading-page';
+
+// --- Interfaces ---
+interface GradingScale {
+    grade: string;
+    score: number;
+    remark: string;
+}
 
 interface StudentData {
     uuid: string;
@@ -22,27 +28,45 @@ interface StudentData {
     avatar: string | null;
 }
 
-interface ReportData {
-    uuid: string;
-    class_name: string;
-    student: StudentData;
-    student_uuid: string;
-    overall: number;
-    teacher_remark: string | null;
-    principal_remark: string | null;
-    created_at: string;
-    updated_at: string;
-    status: 'PENDING' | 'APPROVED' | 'REJECTED';
-}
-
-type AssessmentObject = {
+interface AssessmentObject {
     uuid: string;
     subject: string;
     assignment: number;
     assessment: number;
     examination: number;
     overall: number;
-};
+    grade?: string;
+    remark?: string;
+}
+
+interface CalendarData {
+    session: string;
+    term: string;
+    close_date: string;
+    open_date: string;
+}
+
+interface ResultSummary {
+    position: string | number;
+    total_students: number;
+    average: number;
+}
+
+interface ResultData {
+    uuid: string;
+    result: {
+        uuid: string;
+        student: StudentData;
+        calendar: CalendarData;
+        class_name: string;
+        teacher_remark: string;
+        principal_remark: string;
+        status?: string;
+    };
+    summary: ResultSummary;
+    assessments: AssessmentObject[];
+    grading_system?: GradingScale[];
+}
 
 export default function ReportPage() {
     const {uuid} = useParams();
@@ -50,21 +74,19 @@ export default function ReportPage() {
 
     const [isLoading, setIsLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
-    const [report, setReport] = useState<ReportData | null>(null);
+    const [reportData, setReportData] = useState<ResultData | null>(null);
     const [assessments, setAssessments] = useState<AssessmentObject[]>([]);
 
     const fetchData = async () => {
         try {
             const response = await view(uuid as string);
-            console.log(response);
             if (response.success) {
-                setReport(response.data.result);
-                setAssessments(response.data.result.assessments || []);
-            } else {
-                console.error(response.message);
+                setReportData(response.data);
+                console.log(response.data)
+                setAssessments(response.data.assessments || []);
             }
         } catch (error) {
-            console.error('An error occurred while fetching the report data.', error);
+            console.error('Error fetching report', error);
         } finally {
             setIsLoading(false);
         }
@@ -74,362 +96,247 @@ export default function ReportPage() {
         fetchData();
     }, []);
 
-    const calculateGrade = (overall: number): string => {
-        if (overall >= 70) return 'A';
-        if (overall >= 60) return 'B';
-        if (overall >= 50) return 'C';
-        if (overall >= 40) return 'D';
-        return 'F';
+    // --- Helpers ---
+    const readableDate = (dateString: string) => {
+        if (!dateString) return 'N/A';
+        return new Date(dateString).toLocaleDateString('en-GB', {
+            day: 'numeric', month: 'short', year: 'numeric'
+        });
     };
 
-    const updateAssessment = (
-        assessmentUuid: string,
-        field: string,
-        value: number
-    ) => {
-        setAssessments((prevAssessments) =>
-            prevAssessments.map((assessment) => {
-                if (assessment.uuid === assessmentUuid) {
-                    const updated = {...assessment, [field]: value};
-                    updated.overall =
-                        updated.assignment + updated.assessment + updated.examination;
-                    return updated;
-                }
-                return assessment;
-            })
-        );
+    const getGradeColor = (grade: string) => {
+        const colors: Record<string, string> = {
+            'A': 'bg-emerald-300 text-emerald-900',
+            'B': 'bg-blue-300 text-blue-900',
+            'C': 'bg-yellow-300 text-yellow-900',
+            'D': 'bg-orange-300 text-orange-900',
+            'F': 'bg-red-300 text-red-900',
+        };
+        return colors[grade] || 'bg-gray-100 text-gray-700 border-gray-200';
     };
 
-    const updateRemark = (
-        field: 'teacher_remark' | 'principal_remark',
-        value: string
-    ) => {
-        setReport((prev) => (prev ? {...prev, [field]: value} : null));
+    const getGradeInfo = (overall: number) => {
+        const system = reportData?.grading_system || [];
+        const sorted = [...system].sort((a, b) => b.score - a.score);
+        const found = sorted.find((g) => overall >= g.score);
+        return {
+            grade: found?.grade || 'F',
+            remark: found?.remark || 'Failed'
+        };
+    };
+
+    // --- Handlers ---
+    const updateAssessment = (uuid: string, field: string, value: number) => {
+        setAssessments(prev => prev.map(item => {
+            if (item.uuid === uuid) {
+                const updated = {...item, [field]: value};
+                updated.overall = updated.assignment + updated.assessment + updated.examination;
+                return updated;
+            }
+            return item;
+        }));
+    };
+
+    const updateRemark = (field: 'teacher_remark' | 'principal_remark', value: string) => {
+        setReportData(prev => prev ? {
+            ...prev,
+            result: {...prev.result, [field]: value}
+        } : null);
     };
 
     const handleSave = async () => {
-        setIsEditing(false);
+        if (!reportData) return;
+        setIsLoading(true);
         try {
-            setIsLoading(true);
             const response = await update(
-                report!.uuid,
+                reportData.result.uuid,
                 {
-                    teacher_remark: report!.teacher_remark,
-                    principal_remark: report!.principal_remark,
-                    status: report!.status,
+                    teacher_remark: reportData.result.teacher_remark,
+                    principal_remark: reportData.result.principal_remark,
+                    status: 'PENDING',
                 },
                 assessments
             );
             if (response.success) {
-                setReport(response.data.result);
-                setAssessments(response.data.result.assessments || []);
-            } else {
-                console.error(response.message);
+                setIsEditing(false);
+                fetchData();
             }
         } catch (error) {
-            console.error('An error occurred while saving the report.', error);
+            console.error('Save error', error);
         } finally {
             setIsLoading(false);
         }
     };
 
-    const handleCancel = () => {
-        setIsEditing(false);
-    };
+    if (isLoading || !reportData) return <LoadingPage/>;
 
-    const getGradeBadge = (grade: string | null) => {
-        const gradeColors: Record<string, string> = {
-            'A+': 'bg-green-700 text-green-50',
-            A: 'bg-green-700 text-green-50',
-            'A-': 'bg-green-600 text-green-50',
-            'B+': 'bg-blue-700 text-blue-50',
-            B: 'bg-blue-700 text-blue-50',
-            'B-': 'bg-blue-600 text-blue-50',
-            'C+': 'bg-gray-600 text-gray-50',
-            C: 'bg-gray-600 text-gray-50',
-            D: 'bg-gray-500 text-gray-50',
-            F: 'bg-red-700 text-red-50',
-        };
-        return gradeColors[grade || 'F'] || 'bg-gray-600 text-gray-50';
-    };
-
-    if (isLoading || !report) {
-        return <LoadingPage/>;
-    }
+    const {result, summary} = reportData;
 
     return (
         <div className='space-y-6'>
-            <div className='grid md:flex justify-between items-center gap-5 border-b pb-6'>
-                <h1 className='text-2xl font-bold'>Student Report Card</h1>
-                <div className='flex gap-2'>
+            {/* HEADER */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-6">
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight">Student Report Card</h1>
+                    <p className="text-sm text-muted-foreground italic">Academic performance
+                        for {result.calendar.term}, {result.calendar.session}</p>
+                </div>
+                <div className="flex gap-2">
                     {!isEditing ? (
                         <>
-                            <Button onClick={() => setIsEditing(true)} className='gap-2'>
-                                <Edit className='h-4 w-4'/>
-                                Edit Report
+                            <Button onClick={() => setIsEditing(true)} variant="outline" className="gap-2">
+                                <Edit className="h-4 w-4"/> Edit Marks
                             </Button>
-                            <Link href={`/report/${report.uuid}`} target='_blank'>
-                                <Button className='gap-2'>
-                                    <Print className='h-4 w-4'/>
-                                    <span>Print Report</span>
+                            <Link href={`/report/print/${reportData.uuid}`} target="_blank">
+                                <Button className="gap-2 bg-slate-900 text-white hover:bg-slate-800">
+                                    <Print className="h-4 w-4"/> Print Result
                                 </Button>
                             </Link>
                         </>
                     ) : (
                         <>
-                            <Button
-                                variant='outline'
-                                onClick={handleCancel}
-                                className='gap-2'
-                            >
-                                <X className='h-4 w-4'/>
-                                Cancel
+                            <Button variant="ghost" onClick={() => setIsEditing(false)}
+                                    className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                                <X className="h-4 w-4 mr-1"/> Discard
                             </Button>
-                            <Button onClick={handleSave} className='gap-2'>
-                                <Save className='h-4 w-4'/>
-                                Save Changes
+                            <Button onClick={handleSave}
+                                    className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
+                                <Save className="h-4 w-4"/> Save Changes
                             </Button>
                         </>
                     )}
                 </div>
             </div>
 
-            {/* Student Information Card */}
-            <Card className='shadow-none rounded-none'>
-                <CardHeader className='border-b border-border'>
-                    <CardTitle className='text-lg'>Student Information</CardTitle>
-                </CardHeader>
-                <CardContent className='pt-6'>
-                    <div className='flex items-center gap-4'>
-                        <Avatar className='h-16 w-16'>
-                            <AvatarImage
-                                src={report.student.avatar || '/placeholder.svg'}
-                                alt={report.student.name}
-                            />
-                            <AvatarFallback>
-                                {report.student.name.charAt(0).toUpperCase()}
-                            </AvatarFallback>
-                        </Avatar>
-                        <div className='flex-1'>
-                            <h3 className='text-xl font-semibold'>{report.student.name}</h3>
-                            <p className='text-sm text-muted-foreground'>
-                                {report.student.reg_number}
-                            </p>
-                            <div className='grid md:flex items-center gap-4 mt-3'>
-                                <Badge variant='outline'>{report.class_name}</Badge>
-                                <Badge
-                                    className={
-                                        report.overall >= 50
-                                            ? 'bg-green-700 text-green-50'
-                                            : 'bg-red-700 text-red-50'
-                                    }
-                                >
-                                    Overall: {report.overall}%
-                                </Badge>
-                            </div>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* Assessments Table */}
-            <Card className='shadow-none rounded-none'>
-                <CardHeader className='border-b border-border'>
-                    <CardTitle className='text-lg'>Subject Assessments</CardTitle>
-                    {isEditing && (
-                        <p className='text-sm text-muted-foreground'>
-                            Edit scores below. Overall scores and grades will be calculated
-                            automatically.
-                        </p>
-                    )}
-                </CardHeader>
-                <CardContent className='pt-6'>
-                    <div className='overflow-x-auto'>
-                        <Table>
-                            <TableHeader>
-                                <TableRow className='border-b border-border'>
-                                    <TableHead>Subject</TableHead>
-                                    <TableHead className='text-center'>Assignment</TableHead>
-                                    <TableHead className='text-center'>Assessment</TableHead>
-                                    <TableHead className='text-center'>Examination</TableHead>
-                                    <TableHead className='text-center'>Overall</TableHead>
-                                    <TableHead className='text-center'>Grade</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {assessments.map((assessment) => (
-                                    <TableRow
-                                        key={assessment.uuid}
-                                        className='border-b border-border'
-                                    >
-                                        <TableCell className='font-medium'>
-                                            {assessment.subject}
-                                        </TableCell>
-                                        <TableCell className='text-center'>
-                                            {isEditing ? (
-                                                <Input
-                                                    type='number'
-                                                    min='0'
-                                                    max='5'
-                                                    value={assessment.assignment}
-                                                    onChange={(e) =>
-                                                        updateAssessment(
-                                                            assessment.uuid,
-                                                            'assignment',
-                                                            Number(e.target.value)
-                                                        )
-                                                    }
-                                                    className='w-16 text-center'
-                                                />
-                                            ) : (
-                                                assessment.assignment
-                                            )}
-                                        </TableCell>
-                                        <TableCell className='text-center'>
-                                            {isEditing ? (
-                                                <Input
-                                                    type='number'
-                                                    min='0'
-                                                    max='15'
-                                                    value={assessment.assessment}
-                                                    onChange={(e) =>
-                                                        updateAssessment(
-                                                            assessment.uuid,
-                                                            'assessment',
-                                                            Number(e.target.value)
-                                                        )
-                                                    }
-                                                    className='w-16 text-center'
-                                                />
-                                            ) : (
-                                                assessment.assessment
-                                            )}
-                                        </TableCell>
-                                        <TableCell className='text-center'>
-                                            {isEditing ? (
-                                                <Input
-                                                    type='number'
-                                                    min='0'
-                                                    max='80'
-                                                    value={assessment.examination}
-                                                    onChange={(e) =>
-                                                        updateAssessment(
-                                                            assessment.uuid,
-                                                            'examination',
-                                                            Number(e.target.value)
-                                                        )
-                                                    }
-                                                    className='w-16 text-center'
-                                                />
-                                            ) : (
-                                                assessment.examination
-                                            )}
-                                        </TableCell>
-                                        <TableCell className='text-center font-bold'>
-                                            {assessment.overall}
-                                        </TableCell>
-                                        <TableCell className='text-center'>
-                                            <Badge
-                                                className={getGradeBadge(
-                                                    calculateGrade(assessment.overall)
-                                                )}
-                                            >
-                                                {calculateGrade(assessment.overall)}
-                                            </Badge>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* Report Summary with Editable Remarks */}
-            <Card className='shadow-none rounded-none'>
-                <CardHeader className='border-b border-border'>
-                    <CardTitle className='text-lg'>Report Summary</CardTitle>
-                </CardHeader>
-                <CardContent className='pt-6'>
-                    <div className='space-y-6'>
-                        {/* Teacher's Remark */}
-                        <div>
-                            <Label className='text-sm font-medium mb-2 block'>
-                                Teacher Remark
-                            </Label>
-                            {isEditing ? (
-                                <Textarea
-                                    value={report.teacher_remark || ''}
-                                    onChange={(e) =>
-                                        updateRemark('teacher_remark', e.target.value)
-                                    }
-                                    placeholder="Enter teacher's remark..."
-                                    className='min-h-[80px]'
-                                />
-                            ) : (
-                                <div className='p-3 bg-muted border border-border'>
-                                    <p className='text-sm'>
-                                        {report.teacher_remark || 'No remark provided'}
-                                    </p>
+            {/* TOP STATS */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <Card className="md:col-span-3 shadow-sm overflow-hidden">
+                    <CardContent className="pt-6">
+                        <div className="flex items-center gap-6">
+                            <Avatar className="h-20 w-20 border-2 border-slate-100 shadow-sm">
+                                <AvatarImage src={result.student.avatar || ''}/>
+                                <AvatarFallback className="bg-slate-100 text-slate-600 text-xl font-bold">
+                                    {result.student.name.charAt(0)}
+                                </AvatarFallback>
+                            </Avatar>
+                            <div className="space-y-1">
+                                <h3 className="text-2xl font-bold text-slate-900">{result.student.name}</h3>
+                                <p className="text-sm font-medium text-slate-500 uppercase tracking-wider">{result.student.reg_number}</p>
+                                <div className="flex flex-wrap gap-2 mt-3">
+                                    <Badge variant="secondary"
+                                           className="px-3 py-1 bg-slate-100 text-slate-700 font-semibold">{result.class_name}</Badge>
+                                    <Badge variant="outline"
+                                           className="px-3 py-1">Position: {summary.position} of {summary.total_students}</Badge>
                                 </div>
-                            )}
-                        </div>
-
-                        {/* Principal's Remark */}
-                        <div>
-                            <Label className='text-sm font-medium mb-2 block'>
-                                Principal Remark
-                            </Label>
-                            {isEditing ? (
-                                <Textarea
-                                    value={report.principal_remark || ''}
-                                    onChange={(e) =>
-                                        updateRemark('principal_remark', e.target.value)
-                                    }
-                                    placeholder="Enter principal's remark..."
-                                    className='min-h-[80px]'
-                                />
-                            ) : (
-                                <div className='p-3 bg-muted border border-border'>
-                                    <p className='text-sm'>
-                                        {report.principal_remark || 'No remark provided'}
-                                    </p>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Report Metadata */}
-                        <div className='grid grid-cols-2 gap-4 text-sm pt-4 border-t border-border'>
-                            <div>
-                                <Label className='text-sm font-medium'>Created Date</Label>
-                                <p className='mt-1'>
-                                    {new Date(report.created_at).toLocaleString()}
-                                </p>
                             </div>
-                            <div>
-                                <Label className='text-sm font-medium'>Last Updated</Label>
-                                <p className='mt-1'>
-                                    {new Date(report.updated_at).toLocaleString()}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* Save Confirmation */}
-            {isEditing && (
-                <Card className='shadow-none rounded-none'>
-                    <CardContent className='pt-6'>
-                        <div className='flex items-center gap-2 text-foreground'>
-                            <Clock className='h-4 w-4'/>
-                            <p className='text-sm font-medium'>
-                                You have unsaved changes. Remember to save your edits before
-                                leaving this page.
-                            </p>
                         </div>
                     </CardContent>
                 </Card>
+
+                <Card className="shadow-sm">
+                    <CardContent className="pt-6 flex flex-col items-center justify-center h-full">
+                        <p className="text-xs text-muted-foreground uppercase font-bold tracking-tighter">Weighted
+                            Average</p>
+                        <h2 className={`text-4xl font-black mt-1 ${summary.average >= 50 ? 'text-emerald-600' : 'text-red-600'}`}>
+                            {summary.average}%
+                        </h2>
+                        <p className="text-[10px] mt-2 text-muted-foreground">
+                            Next Term Resumes: <span
+                            className="font-bold">{readableDate(result.calendar.open_date)}</span>
+                        </p>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* SUBJECTS TABLE */}
+            <Card className="shadow-sm border-none bg-white overflow-hidden">
+                <Table>
+                    <TableHeader className="bg-slate-50">
+                        <TableRow>
+                            <TableHead className="font-bold text-slate-700">SUBJECTS</TableHead>
+                            <TableHead className="text-center w-24 font-bold text-slate-700">CA 1</TableHead>
+                            <TableHead className="text-center w-24 font-bold text-slate-700">CA 2</TableHead>
+                            <TableHead className="text-center w-24 font-bold text-slate-700">EXAM</TableHead>
+                            <TableHead className="text-center w-24 font-bold text-slate-700">TOTAL</TableHead>
+                            <TableHead className="text-center font-bold text-slate-700">PERFORMANCE</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {assessments.map((a) => {
+                            const {grade, remark} = getGradeInfo(a.overall);
+                            const gradeStyle = getGradeColor(grade);
+
+                            return (
+                                <TableRow key={a.uuid} className="hover:bg-slate-50/50 transition-colors">
+                                    <TableCell
+                                        className="font-semibold text-slate-800 uppercase text-xs">{a.subject}</TableCell>
+                                    {['assignment', 'assessment', 'examination'].map((field) => (
+                                        <TableCell key={field} className="text-center">
+                                            {isEditing ? (
+                                                <Input
+                                                    type="number"
+                                                    value={a[field as keyof AssessmentObject] as number}
+                                                    onChange={(e) => updateAssessment(a.uuid, field, Number(e.target.value))}
+                                                    className="w-16 mx-auto text-center h-8 focus:ring-emerald-500"
+                                                />
+                                            ) : (
+                                                <span
+                                                    className="text-slate-600">{a[field as keyof AssessmentObject] as number}</span>
+                                            )}
+                                        </TableCell>
+                                    ))}
+                                    <TableCell className="text-center font-black text-slate-900">{a.overall}</TableCell>
+                                    <TableCell className="text-center">
+                                        <Badge variant="outline"
+                                               className={`font-bold px-3 py-0.5 border-2 ${gradeStyle}`}>
+                                            {grade}
+                                        </Badge>
+                                        <span
+                                            className={`block text-[9px] mt-1 font-bold uppercase tracking-tighter ${grade === 'F' ? 'text-red-500' : 'text-slate-400'}`}>
+                                            {remark}
+                                        </span>
+                                    </TableCell>
+                                </TableRow>
+                            );
+                        })}
+                    </TableBody>
+                </Table>
+            </Card>
+
+            {/* REMARKS SECTION */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {(['teacher_remark', 'principal_remark'] as const).map((field) => (
+                    <Card key={field} className="shadow-sm border-slate-200">
+                        <CardHeader className="pb-2 bg-slate-50/50 border-b mb-4">
+                            <CardTitle className="text-xs font-black uppercase text-slate-500 tracking-widest">
+                                {field.replace('_', ' ')}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            {isEditing ? (
+                                <Textarea
+                                    value={result[field] || ''}
+                                    onChange={(e) => updateRemark(field, e.target.value)}
+                                    placeholder={`Enter official ${field.split('_')[0]} comment...`}
+                                    className="min-h-[100px] border-slate-200 focus:border-emerald-500"
+                                />
+                            ) : (
+                                <p className="text-sm italic text-slate-600 leading-relaxed">
+                                    {result[field] || 'No official remark recorded for this period.'}
+                                </p>
+                            )}
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+
+            {/* UNSAVED CHANGES FLOATER */}
+            {isEditing && (
+                <div
+                    className="fixed bottom-6 right-6 flex items-center gap-3 text-emerald-700 bg-emerald-50 p-4 px-6 border border-emerald-200 rounded-full shadow-lg animate-bounce">
+                    <Clock className="h-5 w-5"/>
+                    <p className="text-sm font-bold">You have unsaved changes!</p>
+                </div>
             )}
         </div>
     );
