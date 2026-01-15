@@ -178,7 +178,7 @@ export default function ReportPage() {
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">Student Report Card</h1>
                     <p className="text-sm text-muted-foreground italic">Academic performance
-                        for {result.calendar.term}, {result.calendar.session}</p>
+                        for {result.calendar?.term}, {result.calendar?.session}</p>
                 </div>
                 <div className="flex gap-2">
                     {!isEditing ? (
@@ -241,7 +241,7 @@ export default function ReportPage() {
                         </h2>
                         <p className="text-[10px] mt-2 text-muted-foreground">
                             Next Term Resumes: <span
-                            className="font-bold">{readableDate(result.calendar.open_date)}</span>
+                            className="font-bold">{readableDate(result.calendar?.open_date)}</span>
                         </p>
                     </CardContent>
                 </Card>
