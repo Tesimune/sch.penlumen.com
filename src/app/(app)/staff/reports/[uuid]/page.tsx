@@ -53,7 +53,6 @@ interface ResultSummary {
 }
 
 interface ResultData {
-    uuid: string;
     result: {
         uuid: string;
         student: StudentData;
@@ -187,7 +186,7 @@ export default function ReportPage() {
                             <Button onClick={() => setIsEditing(true)} variant="outline" className="gap-2">
                                 <Edit className="h-4 w-4"/> Edit Marks
                             </Button>
-                            <Link href={`/report/print/${reportData.uuid}`} target="_blank">
+                            <Link href={`/report/print/${reportData.result.uuid}`} target="_blank">
                                 <Button className="gap-2 bg-slate-900 text-white hover:bg-slate-800">
                                     <Print className="h-4 w-4"/> Print Result
                                 </Button>
