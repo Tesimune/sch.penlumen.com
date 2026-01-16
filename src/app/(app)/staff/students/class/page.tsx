@@ -77,7 +77,7 @@ export default function StudentsPage() {
                 toast(resSubject.message || 'Something went wrong');
             }
         } catch (error: any) {
-            toast(error.message || 'Something went wront');
+            toast(error.message || 'Something went wrong');
         } finally {
             setIsLoading(false);
         }

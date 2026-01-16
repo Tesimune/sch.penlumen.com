@@ -1,14 +1,13 @@
 'use client';
 
 import {useEffect, useState} from 'react';
-import {Printer as Print} from 'lucide-react';
-
+import {Printer as Print, User} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import LoadingPage from '@/components/loading-page';
-
 import {useResult} from '@/hooks/result';
 import {useParams} from 'next/navigation';
 
+// ... (Interfaces and Constants remain the same as your original code)
 interface GradingScale {
     grade: string;
     score: number;
@@ -28,7 +27,7 @@ interface AssessmentObject {
     assessment: number;
     examination: number;
     overall: number;
-    grade?: string;  // Added optional fields if they come from the API
+    grade?: string;
     remark?: string;
 }
 
@@ -45,7 +44,6 @@ interface ResultSummary {
 }
 
 interface ResultData {
-    // Matches the nesting used in your JSX (e.g., resultData.result.student)
     result: {
         student: StudentData;
         calendar: CalendarData;
@@ -55,9 +53,8 @@ interface ResultData {
     };
     summary: ResultSummary;
     assessments: AssessmentObject[];
-    grading_system?: GradingScale[]; // Optional in case API doesn't provide it
+    grading_system?: GradingScale[];
 }
-
 
 const DEFAULT_GRADING_SYSTEM: GradingScale[] = [
     {grade: "A", score: 90, remark: "Excellent"},
@@ -65,351 +62,259 @@ const DEFAULT_GRADING_SYSTEM: GradingScale[] = [
     {grade: "C", score: 60, remark: "Good"},
     {grade: "D", score: 50, remark: "Fairly Good"},
     {grade: "F", score: 0, remark: "Failed"},
-]
+];
 
-const getGradeAndRemark = (score: number, gradingSystem: GradingScale[]): { grade: string; remark: string } => {
-    const sorted = [...gradingSystem].sort((a, b) => b.score - a.score)
+const getGradeAndRemark = (score: number, gradingSystem: GradingScale[]) => {
+    const sorted = [...gradingSystem].sort((a, b) => b.score - a.score);
     for (const item of sorted) {
-        if (score >= item.score) {
-            return {grade: item.grade, remark: item.remark}
-        }
+        if (score >= item.score) return {grade: item.grade, remark: item.remark};
     }
-    return {grade: "F", remark: "Failed"}
-}
+    return {grade: "F", remark: "Failed"};
+};
 
 const formatDate = (dateString: string | undefined) => {
     if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString('en-GB', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric'
-    });
+    return new Date(dateString).toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric'});
 };
+
+const school_logo = process.env.NEXT_PUBLIC_APP_LOGO;
+const school_name = process.env.NEXT_PUBLIC_APP_FULL_NAME;
+const school_address = process.env.NEXT_PUBLIC_APP_ADDRESS;
 
 export default function TraditionalResultSheet() {
     const [resultData, setResultData] = useState<ResultData | null>(null);
     const [assessments, setAssessments] = useState<AssessmentObject[]>([]);
-    const [showPrintView, setShowPrintView] = useState(false);
+    const [shouldPrint, setShouldPrint] = useState(false);
     const [loading, setLoading] = useState(true);
     const {view} = useResult();
     const {uuid} = useParams();
 
-    const totalScores = assessments.reduce(
-        (sum, subject) => sum + subject.overall,
-        0
-    );
-    const average = (totalScores / assessments.length).toFixed(1);
+    const totalScores = assessments.reduce((sum, subject) => sum + subject.overall, 0);
+    const average = assessments.length > 0 ? (totalScores / assessments.length).toFixed(1) : 0;
+
     const handlePrint = () => {
-        setShowPrintView(true);
-        setTimeout(() => {
-            window.print();
-            setShowPrintView(false);
-        }, 100);
+        window.print();
     };
 
-    const gradingSystem = resultData?.grading_system || DEFAULT_GRADING_SYSTEM
-    const fetchData = async () => {
-        try {
-            const response = await view(uuid as string);
-            if (response.success) {
-                const data = response.data;
-                console.log(data);
-                setResultData(data);
-                setAssessments(data.assessments || []);
-                handlePrint()
-            }
-        } catch (error) {
-            console.error('Error fetching result data:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    const gradingSystem = resultData?.grading_system || DEFAULT_GRADING_SYSTEM;
 
     useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await view(uuid as string);
+                if (response.success) {
+                    setResultData(response.data);
+                    setAssessments(response.data.assessments || []);
+                    setShouldPrint(true);
+                }
+            } catch (error) {
+                console.error('Error fetching result data:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
         fetchData();
-    }, []);
+    }, [uuid, view]);
 
-    if (loading) {
-        return <LoadingPage/>;
-    }
+    useEffect(() => {
+        if (!loading && resultData && shouldPrint) {
+            const timer = setTimeout(() => {
+                window.print();
+                setShouldPrint(false); // Reset to prevent re-triggering
+            }, 500); // Small buffer to ensure browser layout is stable
+            return () => clearTimeout(timer);
+        }
+    }, [loading, resultData, shouldPrint]);
 
-    if (!resultData) {
-        return (
-            <div className='min-h-screen bg-white p-6'>
-                <p className='text-center text-foreground'>No result data available</p>
-            </div>
-        );
-    }
+    if (loading) return <LoadingPage/>;
+    if (!resultData) return <div className='p-6 text-center'>No result data available</div>;
 
     return (
-        <div className='min-h-screen bg-white'>
-            {/* Control Buttons - Hidden in print */}
-            <div className='no-print p-4 mb-3 bg-white border-b border-gray-300'>
+        <div className='min-h-screen bg-gray-100 pb-10'>
+            {/* Control Buttons */}
+            <div className='no-print p-4 mb-3 bg-white border-b sticky top-0 z-10'>
                 <div className='max-w-4xl mx-auto flex justify-between items-center'>
-                    <h1 className='text-xl font-bold text-foreground'>Report Sheet</h1>
-                    <div className='flex gap-2'>
-                        <Button onClick={handlePrint} className='gap-2'>
-                            <Print className='h-4 w-4'/>
-                            Print Result
-                        </Button>
-                    </div>
+                    <h1 className='text-xl font-bold'>Report Card Preview</h1>
+                    <Button onClick={handlePrint} className='gap-2'>
+                        <Print className='h-4 w-4'/> Print Result
+                    </Button>
                 </div>
             </div>
 
-            <div className={`${showPrintView && 'flex'}`}>
-                {/* Result Sheet - A4 Format */}
-                <div className={`result-sheet ${showPrintView && 'print-view'}`}>
-                    <div className='page-content'>
-                        {/* Header */}
-                        <div className='text-center mb-6'>
-                            <h1 className='text-xl font-bold tracking-wider'>RESULT</h1>
-                        </div>
+            {/* Result Sheet - A4 Format */}
+            <div className="result-sheet">
+                <div className='page-content'>
 
-                        {/* Student Information */}
-                        <div className='student-info mb-6'>
-                            <div className='info-row'>
-                                <div className='info-field'>
-                                    <span className='label'>NAME:</span>
-                                    <span className='underline-field'>{resultData.result.student.name}</span>
-                                </div>
-                                <div className='info-field'>
-                                    <span className='label'>SESSION:</span>
-                                    <span className='underline-field'>{resultData.result.calendar?.session}</span>
-                                </div>
-                            </div>
-
-                            <div className='info-row'>
-                                <div className='info-field'>
-                                    <span className='label'>CLASS:</span>
-                                    <span className='underline-field'>{resultData.result.class_name}</span>
-                                </div>
-                                <div className='info-field'>
-                                    <span className='label'>TERM:</span>
-                                    <span className='underline-field'>{resultData.result.calendar?.term}</span>
-                                </div>
-                            </div>
-
-                            <div className='info-row'>
-                                <div className='info-field'>
-                                    <span className='label'>POSITION:</span>
-                                    <span className='underline-field'>{resultData.summary.position}</span>
-                                </div>
-                                <div className='info-field'>
-                                    <span className='label'>NO. OF STUDENTS:</span>
-                                    <span className='underline-field'>{resultData.summary.total_students}</span>
-                                </div>
-                            </div>
-
-                            <div className='info-row'>
-                                <div className='info-field'>
-                                    <span className='label'>CLOSING DATE:</span>
-                                    <span className='underline-field'>{formatDate(resultData.result.calendar?.close_date)}</span>
-                                </div>
-                                <div className='info-field'>
-                                    <span className='label'>RESUMPTION DATE:</span>
-                                    <span className='underline-field'>{formatDate(resultData.result.calendar?.open_date)}</span>
-                                </div>
+                    {/* Header: School Info */}
+                    <div className='flex items-center justify-between border-b-2 border-black pb-1 mb-1'>
+                        <img src={school_logo} alt='school logo' className="h-20 w-20 object-contain"/>
+                        <div className='text-center flex-1 px-4'>
+                            <h1 className='text-2xl font-black uppercase leading-tight'>{school_name}</h1>
+                            <p className='text-xs uppercase font-bold'>{school_address}</p>
+                            <div
+                                className='inline-block bg-black text-white px-4 py-1 mt-2 text-sm font-bold tracking-widest'>
+                                STUDENT PROGRESS REPORT
                             </div>
                         </div>
+                        <div
+                            className="h-20 w-20 border-2 border-dashed border-gray-300 flex items-center justify-center">
+                            {resultData.result.student.avatar ? (
+                                <img src={resultData.result.student.avatar} alt="student"
+                                     className="h-full w-full object-cover"/>
+                            ) : (
+                                <User className="text-gray-300 h-10 w-10"/>
+                            )}
+                        </div>
+                    </div>
 
-                        {/* Results Table */}
-                        <div className='results-table mb-6'>
-                            <table className='w-full border-collapse border-2 border-black'>
-                                <thead>
-                                <tr className='bg-gray-200'>
-                                    <th className='border border-black p-2 text-left font-bold'>
-                                        SUBJECTS
-                                    </th>
-                                    <th className='border border-black p-1 text-center font-bold text-xs'>
-                                        ASSIGNMENT
-                                    </th>
-                                    <th className='border border-black p-1 text-center font-bold text-xs'>
-                                        ASSESSMENT
-                                    </th>
-                                    <th className='border border-black p-1 text-center font-bold text-xs'>
-                                        EXAMINATION
-                                    </th>
-                                    <th className='border border-black p-1 text-center font-bold text-xs'>
-                                        TOTAL
-                                    </th>
-                                    <th className='border border-black p-1 text-center font-bold text-xs'>
-                                        GRADE
-                                    </th>
-                                    <th className='border border-black p-1 text-center font-bold text-xs'>
-                                        REMARK
-                                    </th>
+                    {/* Student Info Grid */}
+                    <div className='grid grid-cols-3 gap-y-2 gap-x-6 mb-1 text-[13px]'>
+                        <div className='flex gap-2 border-b border-gray-400 pb-1'>
+                            <span className='font-bold uppercase whitespace-nowrap'>Name:</span>
+                            <span className='truncate'>{resultData.result.student.name}</span>
+                        </div>
+                        <div className='flex gap-2 border-b border-gray-400 pb-1'>
+                            <span className='font-bold uppercase whitespace-nowrap'>Reg No:</span>
+                            <span>{resultData.result.student.reg_number}</span>
+                        </div>
+                        <div className='flex gap-2 border-b border-gray-400 pb-1'>
+                            <span className='font-bold uppercase whitespace-nowrap'>Class:</span>
+                            <span>{resultData.result.class_name}</span>
+                        </div>
+                        <div className='flex gap-2 border-b border-gray-400 pb-1'>
+                            <span className='font-bold uppercase whitespace-nowrap'>Session:</span>
+                            <span>{resultData.result.calendar?.session}</span>
+                        </div>
+                        <div className='flex gap-2 border-b border-gray-400 pb-1'>
+                            <span className='font-bold uppercase whitespace-nowrap'>Term:</span>
+                            <span>{resultData.result.calendar?.term}</span>
+                        </div>
+                        <div className='flex gap-2 border-b border-gray-400 pb-1'>
+                            <span className='font-bold uppercase whitespace-nowrap'>Position:</span>
+                            <span
+                                className="font-bold">{resultData.summary.position} / {resultData.summary.total_students}</span>
+                        </div>
+                    </div>
+
+                    {/* Results Table */}
+                    <div className='results-table mb-1'>
+                        <table className='w-full border-collapse border-2 border-black'>
+                            <thead>
+                            <tr className='bg-gray-100'>
+                                <th className='border border-black p-1.5 text-left font-bold text-xs'>SUBJECTS</th>
+                                <th className='border border-black p-1 text-center font-bold text-[10px] w-16'>ASSIGN.</th>
+                                <th className='border border-black p-1 text-center font-bold text-[10px] w-16'>TEST</th>
+                                <th className='border border-black p-1 text-center font-bold text-[10px] w-16'>EXAM</th>
+                                <th className='border border-black p-1 text-center font-bold text-[10px] w-16'>TOTAL</th>
+                                <th className='border border-black p-1 text-center font-bold text-[10px] w-12'>GRADE</th>
+                                <th className='border border-black p-1 text-center font-bold text-[10px] w-24'>REMARK</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {assessments.map((assessment, index) => (
+                                <tr key={index} className="h-7">
+                                    <td className='border border-black px-2 font-bold text-xs uppercase'>{assessment.subject}</td>
+                                    <td className='border border-black text-center text-xs'>{assessment.assignment}</td>
+                                    <td className='border border-black text-center text-xs'>{assessment.assessment}</td>
+                                    <td className='border border-black text-center text-xs'>{assessment.examination}</td>
+                                    <td className='border border-black text-center font-bold text-xs'>{assessment.overall}</td>
+                                    <td className='border border-black text-center font-bold text-xs'>
+                                        {assessment.grade || getGradeAndRemark(assessment.overall, gradingSystem).grade}
+                                    </td>
+                                    <td className='border border-black text-center text-[10px] uppercase'>{assessment.remark}</td>
                                 </tr>
-                                </thead>
+                            ))}
+                            {/* Dynamic Empty rows to fill space but prevent overflow */}
+                            {Array.from({length: Math.max(0, 12 - assessments.length)}).map((_, index) => (
+                                <tr key={`empty-${index}`} className="h-7">
+                                    <td className='border border-black'>&nbsp;</td>
+                                    <td className='border border-black'>&nbsp;</td>
+                                    <td className='border border-black'>&nbsp;</td>
+                                    <td className='border border-black'>&nbsp;</td>
+                                    <td className='border border-black'>&nbsp;</td>
+                                    <td className='border border-black'>&nbsp;</td>
+                                    <td className='border border-black'>&nbsp;</td>
+                                </tr>
+                            ))}
+                            </tbody>
+                            <tfoot>
+                            <tr className="bg-gray-50">
+                                <td className="border border-black px-2 font-bold text-xs">AGGREGATE / AVERAGE</td>
+                                <td colSpan={3} className="border border-black"></td>
+                                <td className="border border-black text-center font-bold text-sm bg-gray-200">{totalScores}</td>
+                                <td colSpan={2}
+                                    className="border border-black text-center font-bold text-sm bg-gray-200">{average}%
+                                </td>
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <div className='grid grid-cols-2 gap-4 mb-1'>
+                        {/* Affective Skills */}
+                        <div>
+                            <h3 className='font-bold text-xs mb-1 uppercase bg-gray-200 px-1 border border-black'>Affective
+                                Domain</h3>
+                            <table className='w-full border-collapse border border-black text-[10px]'>
                                 <tbody>
-                                {assessments.map((assessment, index) => (
-                                    <tr key={index}>
-                                        <td className='border border-black p-2 font-semibold'>
-                                            {assessment.subject}
-                                        </td>
-                                        <td className='border border-black p-1 text-center'>
-                                            {assessment.assignment}
-                                        </td>
-                                        <td className='border border-black p-1 text-center'>
-                                            {assessment.assessment}
-                                        </td>
-                                        <td className='border border-black p-1 text-center'>
-                                            {assessment.examination}
-                                        </td>
-                                        <td className='border border-black p-1 text-center font-bold'>
-                                            {assessment.overall}
-                                        </td>
-                                        <td className='border border-black p-1 text-center font-bold'>
-                                            {assessment.grade || getGradeAndRemark(assessment.overall, gradingSystem).grade}
-                                        </td>
-                                        <td className='border border-black p-1 text-center text-xs'>
-                                            {assessment.remark}
-                                        </td>
-                                    </tr>
-                                ))}
-                                {/* Empty rows */}
-                                {Array.from({
-                                    length: Math.max(0, 15 - assessments.length),
-                                }).map((_, index) => (
-                                    <tr key={`empty-${index}`}>
-                                        <td className='border border-black p-2'>&nbsp;</td>
-                                        <td className='border border-black p-1'>&nbsp;</td>
-                                        <td className='border border-black p-1'>&nbsp;</td>
-                                        <td className='border border-black p-1'>&nbsp;</td>
-                                        <td className='border border-black p-1'>&nbsp;</td>
-                                        <td className='border border-black p-1'>&nbsp;</td>
-                                        <td className='border border-black p-1'>&nbsp;</td>
+                                {['Punctuality', 'Neatness', 'Politeness', 'Honesty', 'Leadership'].map(skill => (
+                                    <tr key={skill}>
+                                        <td className='border border-black px-1 font-bold uppercase'>{skill}</td>
+                                        <td className='border border-black w-10 text-center'>{' '}</td>
                                     </tr>
                                 ))}
                                 </tbody>
                             </table>
                         </div>
 
-                        {/* Summary Section */}
-                        <div className='summary-section mb-2'>
-                            <div className='flex justify-between items-start'>
-                                <div className='flex justify-between item-center gap-2'>
-                                    <h3 className='text-md font-bold mb-2'>TOTAL SCORES</h3>
-                                    <div className='text-md font-bold'>{totalScores}</div>
-                                </div>
-                                <div className='flex justify-between item-center gap-2'>
-                                    <h3 className='text-md font-bold mb-2'>AVERAGE:</h3>
-                                    <div className='text-md font-bold'>{average}</div>
-                                </div>
+                        {/* Grading Key */}
+                        <div>
+                            <h3 className='font-bold text-xs mb-1 uppercase bg-gray-200 px-1 border border-black'>Grading
+                                Key</h3>
+                            <table className='w-full border-collapse border border-black text-[10px]'>
+                                <tbody>
+                                <tr className='flex flex-wrap p-1 gap-x-4'>
+                                    {gradingSystem.map((item, index) => (
+                                        <td key={index} className="whitespace-nowrap">
+                                            <span className="font-bold">{item.grade}</span>: {item.score}+
+                                            ({item.remark})
+                                        </td>
+                                    ))}
+                                </tr>
+                                </tbody>
+                            </table>
+                            <div className="mt-4 text-[10px]">
+                                <p><span
+                                    className="font-bold">Resumption:</span> {formatDate(resultData.result.calendar?.open_date)}
+                                </p>
+                                <p><span
+                                    className="font-bold">Vacation:</span> {formatDate(resultData.result.calendar?.close_date)}
+                                </p>
                             </div>
                         </div>
+                    </div>
 
-                        {/* Bottom Section */}
-                        <div className='bottom-section text-xs'>
-                            <div className='flex justify-between'>
-                                {/* Affective Skills */}
-                                <div className='affective-skills'>
-                                    <h3 className='font-bold mb-2'>AFFECTIVE SKILLS</h3>
-                                    <table className='border-collapse border border-black'>
-                                        <tbody>
-                                        <tr>
-                                            <td className='border border-black p-1 font-semibold'>
-                                                PUNCTUALITY
-                                            </td>
-                                            <td className='border border-black p-1 text-center w-12'>
-                                                {' '}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td className='border border-black p-1 font-semibold'>
-                                                POLITENESS
-                                            </td>
-                                            <td className='border border-black p-1 text-center'>
-                                                {' '}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td className='border border-black p-1 font-semibold'>
-                                                NEATNESS
-                                            </td>
-                                            <td className='border border-black p-1 text-center'>
-                                                {' '}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td className='border border-black p-1 font-semibold'>
-                                                HONESTY
-                                            </td>
-                                            <td className='border border-black p-1 text-center'>
-                                                {' '}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td className='border border-black p-1 font-semibold italic'>
-                                                LEADERSHIP SKILLS
-                                            </td>
-                                            <td className='border border-black p-1 text-center'>
-                                                {' '}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td className='border border-black p-1 font-semibold italic'>
-                                                ATTENTIVENESS
-                                            </td>
-                                            <td className='border border-black p-1 text-center'>
-                                                {' '}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td className='border border-black p-1 font-semibold italic'>
-                                                COOPERATION
-                                            </td>
-                                            <td className='border border-black p-1 text-center'>
-                                                {' '}
-                                            </td>
-                                        </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                {/* Grading System */}
-                                <div className="grading-system">
-                                    <h3 className="font-bold mb-2">GRADING SYSTEM</h3>
-                                    <table className="border-collapse border border-black w-full">
-                                        <tbody>
-                                        {gradingSystem.map((item, index) => (
-                                            <tr key={index}>
-                                                <td className="border border-black p-1 text-center font-bold">{item.grade}</td>
-                                                <td className="border border-black p-1 text-center text-xs">{item.remark}</td>
-                                            </tr>
-                                        ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
+                    {/* Remarks Section */}
+                    <div className='space-y-3 text-[12px]'>
+                        <div className='flex items-end gap-2'>
+                            <span className='font-bold whitespace-nowrap uppercase'>Class Teacher's Remark:</span>
+                            <div
+                                className='flex-1 border-b border-black italic px-2'>{resultData.result.teacher_remark}</div>
+                        </div>
+                        <div className='flex items-end gap-2'>
+                            <span className='font-bold whitespace-nowrap uppercase'>Principal's Remark:</span>
+                            <div
+                                className='flex-1 border-b border-black italic px-2'>{resultData.result.principal_remark}</div>
                         </div>
 
-                        {/* Remarks Section */}
-                        <div className='mt-3'>
-                            <div className='mb-4'>
-                                <div className='flex items-center'>
-                                    <span className='font-bold mr-2'>TEACHER REMARK:</span>
-                                    <div className='flex-1 border-b border-black'>
-                                        {resultData.result.teacher_remark}
-                                    </div>
-                                </div>
+                        <div className='flex justify-between items-end pt-1'>
+                            <div className="text-center">
+                                <div className="w-32 border-b border-black"></div>
+                                <span className="text-[10px] uppercase font-bold">Class Teacher Sign</span>
                             </div>
-
-                            <div className='mt-3'>
-                                <div className='flex items-center'>
-                                    <span className='font-bold mr-2'>PRINCIPAL REMARK:</span>
-                                    <div className='flex-1 border-b border-black'>
-                                        {resultData.result.principal_remark}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className='mt-5'>
-                                <div className='flex justify-end'>
-                                    <div className='flex items-center'>
-                                        <span className='font-bold mr-2'>SIGN:</span>
-                                        <div className='w-48 border-b border-black pb-1'></div>
-                                    </div>
-                                </div>
+                            <div className="text-center">
+                                <div className="w-32 border-b border-black"></div>
+                                <span className="text-[10px] uppercase font-bold">Principal Sign & Stamp</span>
                             </div>
                         </div>
                     </div>
@@ -418,81 +323,42 @@ export default function TraditionalResultSheet() {
 
             <style jsx>{`
                 .result-sheet {
-                    max-width: 210mm;
+                    width: 210mm;
+                    min-height: 297mm;
                     margin: 0 auto;
                     background: white;
-                    padding: 20mm;
+                    padding: 15mm;
                     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                    position: relative;
+                    overflow: hidden;
                 }
 
                 .page-content {
-                    font-family: 'Times New Roman', serif;
-                    font-size: 12px;
-                    line-height: 1.2;
-                }
-
-                .student-info {
-                    font-size: 14px;
-                    font-weight: bold;
-                }
-
-                .info-row {
-                    display: flex;
-                    justify-content: space-between;
-                    margin-bottom: 8px;
-                }
-
-                .info-field {
-                    display: flex;
-                    align-items: center;
-                    width: 48%;
-                }
-
-                .label {
-                    font-weight: bold;
-                    margin-right: 8px;
-                }
-
-                .underline-field {
-                    flex: 1;
-                    border-bottom: 1px solid black;
-                    padding-bottom: 2px;
-                    text-align: center;
-                }
-
-                .results-table table {
-                    font-size: 11px;
+                    font-family: 'Arial', sans-serif;
                 }
 
                 @media print {
+                    @page {
+                        size: A4;
+                        margin: 0;
+                    }
+
+                    body {
+                        background: white;
+                        -webkit-print-color-adjust: exact;
+                    }
+
                     .no-print {
                         display: none !important;
                     }
 
                     .result-sheet {
-                        box-shadow: none;
-                        margin: 0;
-                        padding: 15mm;
-                        max-width: none;
                         width: 100%;
-                    }
-
-                    .page-content {
-                        font-size: 11px;
-                    }
-
-                    .student-info {
-                        font-size: 12px;
-                    }
-
-                    body {
+                        height: 100vh;
                         margin: 0;
-                        padding: 0;
-                    }
-
-                    @page {
-                        size: A4;
-                        margin: 0;
+                        padding: 10mm;
+                        box-shadow: none;
+                        overflow: hidden; /* Critical: prevents second page */
                     }
                 }
             `}</style>
