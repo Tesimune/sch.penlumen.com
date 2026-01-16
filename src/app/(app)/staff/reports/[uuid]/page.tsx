@@ -105,13 +105,14 @@ export default function ReportPage() {
 
     const getGradeColor = (grade: string) => {
         const colors: Record<string, string> = {
-            'A': 'bg-emerald-300 text-emerald-900',
-            'B': 'bg-blue-300 text-blue-900',
-            'C': 'bg-yellow-300 text-yellow-900',
-            'D': 'bg-orange-300 text-orange-900',
-            'F': 'bg-red-300 text-red-900',
+            'A': 'bg-white text-black   ',
+            'B': 'bg-primary text-white',
+            'C': 'bg-secondary text-black',
+            'D': 'bg-destructive text-white',
+            'E': 'bg-destructive text-white',
+            'F': 'bg-destructive text-white',
         };
-        return colors[grade] || 'bg-gray-100 text-gray-700 border-gray-200';
+        return colors[grade] || 'bg-gray-100 text-gray-700';
     };
 
     const getGradeInfo = (overall: number) => {
@@ -195,7 +196,7 @@ export default function ReportPage() {
                     ) : (
                         <>
                             <Button variant="ghost" onClick={() => setIsEditing(false)}
-                                    className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                                    className="bg-red-200 text-red-600 hover:text-red-700 hover:bg-red-100">
                                 <X className="h-4 w-4 mr-1"/> Discard
                             </Button>
                             <Button onClick={handleSave}
@@ -287,7 +288,7 @@ export default function ReportPage() {
                                     <TableCell className="text-center font-black text-slate-900">{a.overall}</TableCell>
                                     <TableCell className="text-center">
                                         <Badge variant="outline"
-                                               className={`font-bold px-3 py-0.5 border-2 ${gradeStyle}`}>
+                                               className={`font-bold px-3 py-0.5 ${gradeStyle}`}>
                                             {grade}
                                         </Badge>
                                         <span
