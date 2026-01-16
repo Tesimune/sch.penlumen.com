@@ -97,6 +97,15 @@ export default function ReportsPage() {
         }
     };
 
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            fetchedReports();
+        }, searchQuery ? 900 : 0);
+
+        return () => clearTimeout(timeout);
+    }, [page, statusFilter, searchQuery]);
+
+
     const getStatusBadge = (status: string) => {
         const statusConfig = {
             APPROVED: {

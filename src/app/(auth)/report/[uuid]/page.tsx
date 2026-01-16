@@ -98,33 +98,25 @@ export default function TraditionalResultSheet() {
 
     const gradingSystem = resultData?.grading_system || DEFAULT_GRADING_SYSTEM;
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const response = await view(uuid as string);
-                if (response.success) {
-                    setResultData(response.data);
-                    setAssessments(response.data.assessments || []);
-                    setShouldPrint(true);
-                }
-            } catch (error) {
-                console.error('Error fetching result data:', error);
-            } finally {
-                setLoading(false);
+    const fetchData = async () => {
+        try {
+            const response = await view(uuid as string);
+            if (response.success) {
+                setResultData(response.data);
+                setAssessments(response.data.assessments || []);
+                setShouldPrint(true);
             }
-        };
-        fetchData();
-    }, [uuid, view]);
+        } catch (error) {
+            console.error('Error fetching result data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        if (!loading && resultData && shouldPrint) {
-            const timer = setTimeout(() => {
-                window.print();
-                setShouldPrint(false); // Reset to prevent re-triggering
-            }, 500); // Small buffer to ensure browser layout is stable
-            return () => clearTimeout(timer);
-        }
-    }, [loading, resultData, shouldPrint]);
+        fetchData();
+    }, []);
+
 
     if (loading) return <LoadingPage/>;
     if (!resultData) return <div className='p-6 text-center'>No result data available</div>;
