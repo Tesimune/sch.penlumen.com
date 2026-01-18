@@ -276,26 +276,20 @@ export default function TraditionalResultSheet() {
                                     </tr>
                                     </tbody>
                                 </table>
-                                <div className="mt-4 text-[10px]">
-                                    <p>
-                                        <span className="font-bold whitespace-nowrap uppercase">School vacation date:</span>
-                                        <span
-                                            className='flex-1 border-b border-black italic px-2'>{formatDate(resultData.result.calendar?.close_date)}</span>
-                                    </p>
-                                    <p>
-                                    <span
-                                        className="font-bold whitespace-nowrap uppercase">School resumption date:</span>
-                                        <span
-                                            className='flex-1 border-b border-black italic px-2'>{formatDate(resultData.result.calendar?.open_date)}</span>
-                                    </p>
-                                </div>
+                                <p className="my-2 text-[10px] uppercase italic">
+                                    <span className="font-bold">Note:</span> Vacation commences on <span
+                                    className="font-bold">{formatDate(resultData.result.calendar?.close_date)}</span> and
+                                    academic activities resume on <span
+                                    className="font-bold">{formatDate(resultData.result.calendar?.open_date)}.</span>
+                                </p>
                             </div>
                         </div>
 
                         {/* Remarks Section */}
                         <div className='space-y-3 text-[12px]'>
                             <div className='flex items-end gap-2'>
-                                <span className='font-bold whitespace-nowrap uppercase'>Class Teacher&apos;s Remark:</span>
+                                <span
+                                    className='font-bold whitespace-nowrap uppercase'>Class Teacher&apos;s Remark:</span>
                                 <div
                                     className='flex-1 border-b border-black italic px-2'>{resultData.result.teacher_remark}</div>
                             </div>

@@ -189,7 +189,7 @@ export default function ReportPage() {
                             </Button>
                             <Link href={`/report/${reportData.result.uuid}`} target="_blank">
                                 <Button className="gap-2 bg-slate-900 text-white hover:bg-slate-800">
-                                    <Print className="h-4 w-4"/> Print Result
+                                    <Print className="h-4 w-4"/> Preview Result
                                 </Button>
                             </Link>
                         </>
